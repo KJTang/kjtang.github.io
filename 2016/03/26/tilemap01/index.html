@@ -3,17 +3,30 @@
 <head>
   <meta charset="utf-8">
   
-  <title>辣鸡</title>
+  <title>Cocos2dx:TileMap的使用（一） | 辣鸡</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description">
-<meta property="og:type" content="website">
-<meta property="og:title" content="辣鸡">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="针对如何在cocos2d中使用tilemap来加载地图的步骤网上基本都有教程，比如怎么使用Tiled创建tilemap，以及如何在cocos2d中加载，网上都能搜索到，这里只简单说一下，不列出具体步骤。这篇文章主要是对tilemap文件的格式以及cocos2d如何加载tilemap做了一个简单的分析，以备日后查看。
+
+在cocos2d中创建并加载tilemap
+
+使用Tiled创建好tilemap">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cocos2dx:TileMap的使用（一）">
+<meta property="og:url" content="http://yoursite.com/2016/03/26/tilemap01/index.html">
 <meta property="og:site_name" content="辣鸡">
-<meta property="og:description">
+<meta property="og:description" content="针对如何在cocos2d中使用tilemap来加载地图的步骤网上基本都有教程，比如怎么使用Tiled创建tilemap，以及如何在cocos2d中加载，网上都能搜索到，这里只简单说一下，不列出具体步骤。这篇文章主要是对tilemap文件的格式以及cocos2d如何加载tilemap做了一个简单的分析，以备日后查看。
+
+在cocos2d中创建并加载tilemap
+
+使用Tiled创建好tilemap">
+<meta property="og:updated_time" content="2016-03-26T13:09:31.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="辣鸡">
-<meta name="twitter:description">
+<meta name="twitter:title" content="Cocos2dx:TileMap的使用（一）">
+<meta name="twitter:description" content="针对如何在cocos2d中使用tilemap来加载地图的步骤网上基本都有教程，比如怎么使用Tiled创建tilemap，以及如何在cocos2d中加载，网上都能搜索到，这里只简单说一下，不列出具体步骤。这篇文章主要是对tilemap文件的格式以及cocos2d如何加载tilemap做了一个简单的分析，以备日后查看。
+
+在cocos2d中创建并加载tilemap
+
+使用Tiled创建好tilemap">
   
     <link rel="alternative" href="/atom.xml" title="辣鸡" type="application/atom+xml">
   
@@ -59,9 +72,7 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-tilemap01" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-tilemap01" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/03/26/tilemap01/" class="article-date">
   <time datetime="2016-03-26T12:47:32.000Z" itemprop="datePublished">2016-03-26</time>
@@ -74,8 +85,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/26/tilemap01/">Cocos2dx:TileMap的使用（一）</a>
+    <h1 class="article-title" itemprop="name">
+      Cocos2dx:TileMap的使用（一）
     </h1>
   
 
@@ -226,109 +237,20 @@ TMXObjectGroup *objectGroup = tilemap-&gt;getObjectGroup(<span class="string">"O
     </footer>
   </div>
   
-</article>
-
-
+    
+<nav id="article-nav">
   
-    <article id="post-physics" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/03/04/physics/" class="article-date">
-  <time datetime="2016-03-04T10:11:08.000Z" itemprop="datePublished">2016-03-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/04/physics/">Cocos2dx:物理引擎碰撞检测</a>
-    </h1>
+    <a href="/2016/03/04/physics/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Cocos2dx:物理引擎碰撞检测</div>
+    </a>
   
+</nav>
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>在cocos2dx中使用物理引擎的时候，对物理世界(PhysicsWorld)中的物体设置好碰撞检测的规则是很常见的需求，对Node调用其getPhysicsBody可以获得它的PhysicsBody，通过setGroup，setCategoryBitmask，setCollisionBitmask，setContactTestBitmask等API可以设置碰撞检测的规则，<br>下面进行一些总结：</p>
-<ul>
-<li><h4 id="void_setGroup_28int_group_29"><a href="#void_setGroup_28int_group_29" class="headerlink" title="void setGroup(int group)"></a>void setGroup(int group)</h4><p>  其优先级比bit masks的优先级高。</p>
-<p>  如果两PhysicsBody的group是正数且相等的话，就一定碰撞；如果group是负数且相等的话，就一定不会碰撞。</p>
-</li>
-<li><h4 id="void_setCategoryBitmask_28int_bitmask_29"><a href="#void_setCategoryBitmask_28int_bitmask_29" class="headerlink" title="void setCategoryBitmask(int bitmask)"></a>void setCategoryBitmask(int bitmask)</h4><p>  这个是用来设置该PhysicsBody的类别的方法，类别用bitmask表示，bitmask为一个32位的整型变量，每一位代表一种类别。而每一个PhysicsBody可以属于多个类别。其默认值为0xFFFFFFFF，同时属于32个类别。</p>
-<p>  例如bitmask为0x03,即0011（此处只保留了最后四位），则表示该PhysicsBody属于最后两位代表的类别，同时属于0001和0010类。</p>
-</li>
-<li><h4 id="void_setCollisionBitmask_28int_bitmask_29"><a href="#void_setCollisionBitmask_28int_bitmask_29" class="headerlink" title="void setCollisionBitmask(int bitmask)"></a>void setCollisionBitmask(int bitmask)</h4><p>  设置此PhysicsBody能与哪些类别的PhysicsBody产生碰撞，例如设置为0x03（即0011），则能与0001和0010两类的物体产生碰撞。</p>
-<p>  默认值0xFFFFFFFF，即能与所有类别的PhysicsBody产生碰撞。</p>
-</li>
-<li><h4 id="void_setContactTestBitmask_28int_bitmask_29"><a href="#void_setContactTestBitmask_28int_bitmask_29" class="headerlink" title="void setContactTestBitmask(int bitmask)"></a>void setContactTestBitmask(int bitmask)</h4><p>  使用类似于CollisionBitmask的使用，用来触发cocos2d中EventListenerPhysicsContact的回调函数，不设置的话就不会响应EventListenerPhysicsContact的事件。</p>
-<p>  默认值0x00000000，即都不响应事件。但是只是不响应事件，如果setCollisionBitMask中使得此PhysicsBody能响应碰撞，则在物理引擎的表现中此PhysicsBody依然能够响应碰撞。</p>
-</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/03/04/physics/" data-id="cim94w0il0000zxcpa712i41a" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/chipmunk/">chipmunk</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cocos2d/">cocos2d</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/物理引擎/">物理引擎</a></li></ul>
-
-    </footer>
-  </div>
   
 </article>
 
-
-  
-    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/01/21/hello-world/" class="article-date">
-  <time datetime="2016-01-21T12:04:50.000Z" itemprop="datePublished">2016-01-21</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/01/21/hello-world/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a href="http://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="http://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="http://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick_Start"><a href="#Quick_Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create_a_new_post"><a href="#Create_a_new_post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run_server"><a href="#Run_server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate_static_files"><a href="#Generate_static_files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy_to_remote_sites"><a href="#Deploy_to_remote_sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/01/21/hello-world/" data-id="cim94tj640001yhcppifeunmp" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-  
 </section>
         
           <aside id="sidebar">
