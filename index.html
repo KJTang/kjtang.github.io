@@ -87,7 +87,7 @@
 <ul>
 <li><h4 id="u5728cocos2d_u4E2D_u521B_u5EFA_u5E76_u52A0_u8F7Dtilemap"><a href="#u5728cocos2d_u4E2D_u521B_u5EFA_u5E76_u52A0_u8F7Dtilemap" class="headerlink" title="在cocos2d中创建并加载tilemap"></a>在cocos2d中创建并加载tilemap</h4></li>
 </ul>
-<p>使用Tiled创建好tilemap后，接下来需要用代码在cocos2d中加载它，代码如下：  </p>
+<p>使用Tiled创建好tilemap后，接下来需要用代码在cocos2d中加载它，代码如下：   </p>
 <pre><code class="c++">TMXTiledMap* tilemap = TMXTiledMap::create(<span class="string">"Map/tilemap.tmx"</span>);
 <span class="keyword">this</span>-&gt;addChild(tilemap);
 </code></pre>
@@ -134,8 +134,8 @@
 0,0,0,0,0,0,0,0,0,0
 <span class="tag">&lt;/<span class="name">data</span>&gt;</span>
 </code></pre>
-<p>这是一个10行10列的地图</p>
-<p><strong> objectgroup </strong>这个是object层的信息，其中会包括多个<strong> <object\> </object\></strong>标签，记录了每个object的信息，obejct有多种类型：    </p>
+<p>这是一个10行10列的地图，0代表没有图块，如果有数字，例如1,就代表tileset中第一个图块，2就代表第二个，以此类推。</p>
+<p><strong> objectgroup </strong>这个是object层的信息，其中会包括多个<strong> object </strong>标签，记录了每个object的信息，obejct有多种类型：    </p>
 <ul>
 <li>四边形：四边形没有特殊标签，直接用object标签即可表示：<pre><code class="xml"><span class="tag">&lt;<span class="name">object</span> <span class="attr">id</span>=<span class="string">"7"</span> <span class="attr">type</span>=<span class="string">"4"</span> <span class="attr">x</span>=<span class="string">"262.786"</span> <span class="attr">y</span>=<span class="string">"576.434"</span> <span class="attr">width</span>=<span class="string">"192.145"</span> <span class="attr">height</span>=<span class="string">"200.622"</span>/&gt;</span>
 </code></pre>
@@ -166,8 +166,19 @@
 <li><h4 id="u5728cocos2d_u4E2D_u89E3_u6790tilemap_u7684_u6570_u636E"><a href="#u5728cocos2d_u4E2D_u89E3_u6790tilemap_u7684_u6570_u636E" class="headerlink" title="在cocos2d中解析tilemap的数据"></a>在cocos2d中解析tilemap的数据</h4></li>
 </ul>
 <p>虽然在cocos2d中加载tilemap非常简单，但是实际使用中经常不仅仅要加载tilemap，实际上还需要通过tilemap传入地图的一些信息，例如使用物理引擎时，需要获知地图中有哪些碰撞物；怪物会在哪里生成；在哪些地方会触发事件等等。信息足够的话，其实可以将Tiled当作关卡编辑器使用，减轻编码负担。</p>
-<p>下面简单介绍一下如何在cocos2d中获取tilemap的object层的信息，代码先给出：   </p>
-<pre><code class="c++">tilemap = TMXTiledMap::create(<span class="string">"Map/tilemap.tmx"</span>);
+<p>tilemap中常用的层有地图层和object层，下面简单介绍一下两者信息的获取方法：</p>
+<ul>
+<li>地图层   </li>
+</ul>
+<p>使用TMXTiledMap类的getLayer方法可以获取到地图层，如果获取成功，会返回一个TMXLayer对象，通过TMXLayer对象可以获取地图层的信息，具体提供的方法可以访问官网查看api：<a href="http://cocos2d-x.org/docs/api-ref/cplusplus/v3x/de/d34/classcocos2d_1_1_t_m_x_layer.html" target="_blank" rel="external">TMXLayer</a>。   </p>
+<pre><code class="c++">TMXLayer* layer = tilemap-&gt;getLayer(<span class="string">"Layer"</span>);
+<span class="built_in">log</span>(<span class="string">"%s"</span>, layer-&gt;getDescription().c_str());
+Sprite* sp = layer-&gt;getTileAt(Vec2(<span class="number">0</span>, <span class="number">15</span>));
+sp-&gt;setPosition(visibleSize/<span class="number">2</span>);
+</code></pre>
+<p>注意一下，以上代码中getTileAt获取到的是已经作为layer的字节点的sprite对象，改变其位置后，原来地图上对应的图块就改变了位置。</p>
+<ul>
+<li>object层<br>通过TMXTiledMap的getObjectGroup方法可以获取到object层对象，该方法返回的是一个TMXObjectGroup对象，其api查看<a href="http://cocos2d-x.org/docs/api-ref/cplusplus/v3x/d4/dfa/classcocos2d_1_1_t_m_x_object_group.html" target="_blank" rel="external">TMXObjectGroup</a>，示例代码如下：   <pre><code class="c++">tilemap = TMXTiledMap::create(<span class="string">"Map/tilemap.tmx"</span>);
 <span class="keyword">this</span>-&gt;addChild(tilemap);
 TMXObjectGroup *objectGroup = tilemap-&gt;getObjectGroup(<span class="string">"Objects"</span>);
 <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; object : objectGroup-&gt;getObjects()) {
@@ -213,12 +224,14 @@ TMXObjectGroup *objectGroup = tilemap-&gt;getObjectGroup(<span class="string">"O
     <span class="built_in">log</span>(<span class="string">""</span>);
 }
 </code></pre>
-<p>创建tilemap时，添加了四种object，都放置在名为Objects的层中，且四种object都添加了type属性以示区别，其中折线为1,多边形为2,椭圆为3,四边形为4。这里可能要注意一下Value的用法，这是cocos2d中存储数据的类，与其相关的还有ValueVector、ValueMap等等，具体使用方法以后再介绍。<br>以上代码中，TMXObjectGroup即tilemap的object层，通过其getObjects方法可以获取其中存储的所有object；之后遍历所有object，判断其type，做相关处理即可。</p>
+</li>
+</ul>
+<p>为了做示范，在创建tilemap时，添加了四种object，都放置在名为Objects的层中，且四种object都添加了type属性以示区别，其中折线为1,多边形为2,椭圆为3,四边形为4。<br>这里可能要注意一下Value的用法，这是cocos2d中存储数据的类，与其相关的还有ValueVector、ValueMap等等，具体使用方法以后再介绍。<br>以上代码中，TMXObjectGroup即tilemap的object层，通过其getObjects方法可以获取其中存储的所有object；之后遍历所有object，判断其type，做相关处理即可。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/03/26/tilemap01/" data-id="cim95mehd00005hcpzqf7bwvl" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/03/26/tilemap01/" data-id="cima07qk40001vwcpprew7xhw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cocos2d/">cocos2d</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tilemap/">tilemap</a></li></ul>
@@ -271,7 +284,7 @@ TMXObjectGroup *objectGroup = tilemap-&gt;getObjectGroup(<span class="string">"O
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/03/04/physics/" data-id="cim94w0il0000zxcpa712i41a" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/03/04/physics/" data-id="cima07qk90006vwcpr93zvcyk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/chipmunk/">chipmunk</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cocos2d/">cocos2d</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/物理引擎/">物理引擎</a></li></ul>
@@ -318,7 +331,7 @@ TMXObjectGroup *objectGroup = tilemap-&gt;getObjectGroup(<span class="string">"O
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/01/21/hello-world/" data-id="cim94tj640001yhcppifeunmp" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/01/21/hello-world/" data-id="cima07qjr0000vwcp9k81qldp" class="article-share-link">Share</a>
       
       
     </footer>
