@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Cocos2dx:TileMap的使用（二） | 辣鸡</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="上一篇主要介绍了在cocos2d中tilemap的加载使用方法，这一篇就简要查看一下cocos2d这部分的源码，看看cocos2d是如何解析tilemap中的数据的。
+创建tilemap的代码如下：
+TMXTiledMap* tilemap = TMXTiledMap::create(&quot;Map/tilemap.tmx&quot;);
+this-&amp;gt;addChild(tilemap);
+
+可以看到coco">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cocos2dx:TileMap的使用（二）">
+<meta property="og:url" content="http://yoursite.com/2016/03/27/tilemap02/index.html">
+<meta property="og:site_name" content="辣鸡">
+<meta property="og:description" content="上一篇主要介绍了在cocos2d中tilemap的加载使用方法，这一篇就简要查看一下cocos2d这部分的源码，看看cocos2d是如何解析tilemap中的数据的。
+创建tilemap的代码如下：
+TMXTiledMap* tilemap = TMXTiledMap::create(&quot;Map/tilemap.tmx&quot;);
+this-&amp;gt;addChild(tilemap);
+
+可以看到coco">
+<meta property="og:updated_time" content="2016-04-03T07:11:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cocos2dx:TileMap的使用（二）">
+<meta name="twitter:description" content="上一篇主要介绍了在cocos2d中tilemap的加载使用方法，这一篇就简要查看一下cocos2d这部分的源码，看看cocos2d是如何解析tilemap中的数据的。
+创建tilemap的代码如下：
+TMXTiledMap* tilemap = TMXTiledMap::create(&quot;Map/tilemap.tmx&quot;);
+this-&amp;gt;addChild(tilemap);
+
+可以看到coco">
+  
+    <link rel="alternative" href="/atom.xml" title="辣鸡" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">辣鸡</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-tilemap02" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/27/tilemap02/" class="article-date">
+  <time datetime="2016-03-27T07:02:33.000Z" itemprop="datePublished">2016-03-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Cocos2dx:TileMap的使用（二）
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>上一篇主要介绍了在cocos2d中tilemap的加载使用方法，这一篇就简要查看一下cocos2d这部分的源码，看看cocos2d是如何解析tilemap中的数据的。</p>
+<p>创建tilemap的代码如下：</p>
+<pre><code class="c++">TMXTiledMap* tilemap = TMXTiledMap::create(<span class="string">"Map/tilemap.tmx"</span>);
+<span class="keyword">this</span>-&gt;addChild(tilemap);
+</code></pre>
+<p>可以看到cocos2d中调用了TMXTiledMap类的create方法，其内容为：</p>
+<pre><code class="c++">TMXTiledMap * TMXTiledMap::create(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; tmxFile) {
+    TMXTiledMap *ret = <span class="keyword">new</span> (<span class="built_in">std</span>::nothrow) TMXTiledMap();
+    <span class="keyword">if</span> (ret-&gt;initWithTMXFile(tmxFile)) {
+        ret-&gt;autorelease();
+        <span class="keyword">return</span> ret;
+    }
+    CC_SAFE_DELETE(ret);
+    <span class="keyword">return</span> <span class="literal">nullptr</span>;
+}
+</code></pre>
+<p>create方法没做什么特别的事情，主要还是跳转到了initWithTMXFile方法：</p>
+<pre><code class="c++"><span class="keyword">bool</span> TMXTiledMap::initWithTMXFile(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; tmxFile) {
+    CCASSERT(tmxFile.size()&gt;<span class="number">0</span>, <span class="string">"TMXTiledMap: tmx file should not be empty"</span>);    
+    setContentSize(Size::ZERO);
+    TMXMapInfo *mapInfo = TMXMapInfo::create(tmxFile);
+    <span class="keyword">if</span> (! mapInfo) {
+        <span class="keyword">return</span> <span class="literal">false</span>;
+    }
+    CCASSERT( !mapInfo-&gt;getTilesets().empty(), <span class="string">"TMXTiledMap: Map not found. Please check the filename."</span>);
+    buildWithMapInfo(mapInfo);
+    <span class="keyword">return</span> <span class="literal">true</span>;
+}
+</code></pre>
+<p>从init方法里面得知，tmx文件的解析工作不是交给TMXTiledMap类做的，而是将tmx的路径传给了TMXMapInfo类，TMXMapInfo处理好地图的各项数据，自己再使用TMXMapInfo的结果创建地图。<br>这里先查看TMXMapInfo的内容，TMXMapInfo类定义在cocos/2d/CCTMXXMLParser.h文件中，注意一下这里TMXMapInfo类不仅继承了Ref，还继承了SAXDelegator类，具体内容等一下再看。</p>
+<pre><code class="c++"><span class="keyword">class</span> CC_DLL TMXMapInfo : <span class="keyword">public</span> Ref, <span class="keyword">public</span> SAXDelegator
+</code></pre>
+<p>TMXMapInfo的create方法东西也不多，只是做了创建工作，初始化交给了initWithTMXFile：</p>
+<pre><code class="c++">TMXMapInfo * TMXMapInfo::create(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; tmxFile) {
+    TMXMapInfo *ret = <span class="keyword">new</span> (<span class="built_in">std</span>::nothrow) TMXMapInfo();
+    <span class="keyword">if</span> (ret-&gt;initWithTMXFile(tmxFile)) {
+        ret-&gt;autorelease();
+        <span class="keyword">return</span> ret;
+    }
+    CC_SAFE_DELETE(ret);
+    <span class="keyword">return</span> <span class="literal">nullptr</span>;
+}
+</code></pre>
+<p>转到initWithTMXFile：</p>
+<pre><code class="c++"><span class="keyword">bool</span> TMXMapInfo::initWithTMXFile(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; tmxFile) {
+    internalInit(tmxFile, <span class="string">""</span>);
+    <span class="keyword">return</span> parseXMLFile(_TMXFileName.c_str());
+}
+</code></pre>
+<p>internalInit就是一些成员变量的的初始化工作，parseXMLFile的内容如下：</p>
+<pre><code class="c++"><span class="keyword">bool</span> TMXMapInfo::parseXMLFile(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; xmlFilename) {
+    SAXParser parser;
+    <span class="keyword">if</span> (<span class="literal">false</span> == parser.init(<span class="string">"UTF-8"</span>) ) {
+        <span class="keyword">return</span> <span class="literal">false</span>;
+    }
+    parser.setDelegator(<span class="keyword">this</span>);
+    <span class="keyword">return</span> parser.parse(FileUtils::getInstance()-&gt;fullPathForFilename(xmlFilename).c_str());
+}
+</code></pre>
+<p>从这里看到，tmx文件的解析最后是交给了SAXParser，且SAXParser的delegator设置为了TMXMapInfo。<br>上面说TMXMapInfo继承了SAXDelegator，所以就将TMXMapInfo和SAXParser关联起来了。<br>此方法最后调用了SAXParser的parse方法进行解析，解析的结果也将交由TMXMapInfo来处理。<br>SAXParser及Delegator的定义在cocos/platform/CCSAXParser.h中。SAXParser的parse方法如下：</p>
+<pre><code class="c++"><span class="keyword">bool</span> SAXParser::parse(<span class="keyword">const</span> <span class="keyword">char</span>* xmlData, <span class="keyword">size_t</span> dataLength) {
+    tinyxml2::XMLDocument tinyDoc;
+    tinyDoc.Parse(xmlData, dataLength);
+    XmlSaxHander printer;
+    printer.setSAXParserImp(<span class="keyword">this</span>);
+
+    <span class="keyword">return</span> tinyDoc.Accept( &amp;printer );    
+}
+</code></pre>
+<p>cocos2d对tmx文件的解析是交给了第三方的xml解析工具tinyxml2来解析的，前上一篇中讲了，tmx文件实际上就是一个xml文件，所以用xml解析器进行解析就可以了。<br>在这里XmlSaxHander类继承了tinyxml2::XMLVisitor类，并且重写了其中的Visit等方法，就是说，在tinyxml2解析tmx的过程中，会调用XmlSaxHander的相应方法，比如XmlSaxHander::VisitEnter：</p>
+<pre><code class="c++"><span class="keyword">bool</span> XmlSaxHander::VisitEnter( <span class="keyword">const</span> tinyxml2::XMLElement&amp; element, <span class="keyword">const</span> tinyxml2::XMLAttribute* firstAttribute ) {
+    <span class="comment">// log(" VisitEnter %s",element.Value());</span>
+
+    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">const</span> <span class="keyword">char</span>*&gt; attsVector;
+    <span class="keyword">for</span>( <span class="keyword">const</span> tinyxml2::XMLAttribute* attrib = firstAttribute; attrib; attrib = attrib-&gt;Next() ) {
+        <span class="comment">// log("%s", attrib-&gt;Name());</span>
+        attsVector.push_back(attrib-&gt;Name());
+        <span class="comment">// log("%s",attrib-&gt;Value());</span>
+        attsVector.push_back(attrib-&gt;Value());
+    }
+
+    <span class="comment">// nullptr is used in c++11</span>
+    <span class="comment">//attsVector.push_back(nullptr);</span>
+    attsVector.push_back(<span class="literal">nullptr</span>);
+
+    SAXParser::startElement(_ccsaxParserImp, (<span class="keyword">const</span> CC_XML_CHAR *)element.Value(), (<span class="keyword">const</span> CC_XML_CHAR **)(&amp;attsVector[<span class="number">0</span>]));
+    <span class="keyword">return</span> <span class="literal">true</span>;
+}
+</code></pre>
+<p>attsVector储存了tinyxml2解析出的属性名称以及其值，并且在return之前，又调用了SAXParser的startElement方法，传入了attsVector。<br>SAXParser的startElement方法是调用的其Delegator的startElement方法，而我们知道TMXMapInfo继承了SAXDelegator并进行了设置，故实际上调用的是TMXMapInfo的startElement方法。<br>所以最后还是回到了TMXMapInfo类里面：</p>
+<pre><code class="c++"><span class="comment">// the XML parser calls here with all the elements</span>
+<span class="keyword">void</span> TMXMapInfo::startElement(<span class="keyword">void</span> *ctx, <span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> <span class="keyword">char</span> **atts)
+{    
+    <span class="comment">// ...</span>
+    <span class="keyword">if</span> (elementName == <span class="string">"map"</span>){<span class="comment">/*...*/</span>} 
+    <span class="keyword">else</span> <span class="keyword">if</span> (elementName == <span class="string">"tileset"</span>) {<span class="comment">/*...*/</span>}
+    <span class="keyword">else</span> <span class="keyword">if</span> (elementName == <span class="string">"tile"</span>){<span class="comment">/*...*/</span>}
+    <span class="keyword">else</span> <span class="keyword">if</span> (elementName == <span class="string">"layer"</span>){<span class="comment">/*...*/</span>}
+    <span class="keyword">else</span> <span class="keyword">if</span> (elementName == <span class="string">"objectgroup"</span>){<span class="comment">/*...*/</span>}
+    <span class="keyword">else</span> <span class="keyword">if</span> (elementName == <span class="string">"image"</span>){<span class="comment">/*...*/</span>}
+    <span class="keyword">else</span> <span class="keyword">if</span> (elementName == <span class="string">"data"</span>){<span class="comment">/*...*/</span>}
+    <span class="keyword">else</span> <span class="keyword">if</span> (elementName == <span class="string">"object"</span>){<span class="comment">/*...*/</span>}
+    <span class="keyword">else</span> <span class="keyword">if</span> (elementName == <span class="string">"property"</span>){<span class="comment">/*...*/</span>}
+    <span class="keyword">else</span> <span class="keyword">if</span> (elementName == <span class="string">"polygon"</span>) {<span class="comment">/*...*/</span>}
+    <span class="keyword">else</span> <span class="keyword">if</span> (elementName == <span class="string">"polyline"</span>){<span class="comment">/*...*/</span>}
+}
+</code></pre>
+<p>由于代码太长，只提取了主要部分。看到一堆if里面的内容是不是很熟悉？回忆上一篇讲到的tmx文件的格式，可以知道是在这里，cocos2d对解析出来的数据进行了处理，挑其中一个，例如object的内容：</p>
+<pre><code class="c++">/*...*/
+else if (elementName == "object")
+{
+    TMXObjectGroup* objectGroup = tmxMapInfo-&gt;getObjectGroups().back();
+    // The value for "type" was blank or not a valid class name
+    // Create an instance of TMXObjectInfo to store the object and its properties
+    ValueMap dict;
+    // Parse everything automatically
+    const char* keys[] = {"name", "type", "width", "height", "gid"};
+
+    for (const auto&amp; key : keys)
+    {
+        Value value = attributeDict[key];
+        dict[key] = value;
+    }
+
+    // But X and Y since they need special treatment
+    // X
+    int x = attributeDict["x"].asInt();
+    // Y
+    int y = attributeDict["y"].asInt();
+
+    Vec2 p(x + objectGroup-&gt;getPositionOffset().x, _mapSize.height * _tileSize.height - y  - objectGroup-&gt;getPositionOffset().y - attributeDict["height"].asInt());
+    p = CC_POINT_PIXELS_TO_POINTS(p);
+    dict["x"] = Value(p.x);
+    dict["y"] = Value(p.y);
+
+    int width = attributeDict["width"].asInt();
+    int height = attributeDict["height"].asInt();
+    Size s(width, height);
+    s = CC_SIZE_PIXELS_TO_POINTS(s);
+    dict["width"] = Value(s.width);
+    dict["height"] = Value(s.height);
+
+    // Add the object to the objectGroup
+    objectGroup-&gt;getObjects().push_back(Value(dict));
+
+    // The parent element is now "object"
+    tmxMapInfo-&gt;setParentElement(TMXPropertyObject);
+}
+</code></pre>
+<p>代码很好懂，就是当解析到object时，对应object所含有的属性，从attributeDict找到其值，例如name、type等等，然后丢到dict里面存储起来就可以了。  </p>
+<p>回到TMXTiledMap类中来，当TMXMapInfo解析完数据后，TMXTileMap就根据数据绘制地图，其buildWithMapInfo方法如下：</p>
+<pre><code class="c++"><span class="keyword">void</span> TMXTiledMap::buildWithMapInfo(TMXMapInfo* mapInfo) {
+    _mapSize = mapInfo-&gt;getMapSize();
+    _tileSize = mapInfo-&gt;getTileSize();
+    _mapOrientation = mapInfo-&gt;getOrientation();
+    _objectGroups = mapInfo-&gt;getObjectGroups();
+    _properties = mapInfo-&gt;getProperties();
+    _tileProperties = mapInfo-&gt;getTileProperties();
+
+    <span class="keyword">int</span> idx=<span class="number">0</span>;
+    <span class="keyword">auto</span>&amp; layers = mapInfo-&gt;getLayers();
+    <span class="keyword">for</span>(<span class="keyword">const</span> <span class="keyword">auto</span> &amp;layerInfo : layers) {
+        <span class="keyword">if</span> (layerInfo-&gt;_visible) {
+            TMXLayer *child = parseLayer(layerInfo, mapInfo);
+            <span class="keyword">if</span> (child == <span class="literal">nullptr</span>) {
+                idx++;
+                <span class="keyword">continue</span>;
+            }
+            addChild(child, idx, idx);
+
+            <span class="comment">// update content size with the max size</span>
+            <span class="keyword">const</span> Size&amp; childSize = child-&gt;getContentSize();
+            Size currentSize = <span class="keyword">this</span>-&gt;getContentSize();
+            currentSize.width = <span class="built_in">std</span>::max( currentSize.width, childSize.width );
+            currentSize.height = <span class="built_in">std</span>::max( currentSize.height, childSize.height );
+            <span class="keyword">this</span>-&gt;setContentSize(currentSize);
+
+            idx++;
+        }
+    }
+}
+</code></pre>
+<p>除了地图基本信息，绘制地图主要的是各个Layer的内容，所以在这里可以看到Layer被依次获取，通过TMXLayer进行了加载，这里就不再详细叙述了。</p>
+<h3 id="u603B_u7ED3"><a href="#u603B_u7ED3" class="headerlink" title="总结"></a>总结</h3><p>总结一下，cocos2d中加载tilemap的过程，简单来说，就是：  </p>
+<ol>
+<li>创建TMXTiledMap类时，其创建了一个TMXMapInfo类的实例。  </li>
+<li>TMXMapInfo类初始化时，使用了tinyxml2对tmx文件进行了解析，并且对解析的数据进行了处理。  </li>
+<li>TMXMapInfo初始化完毕后，对数据处理也完毕了，这时候TMXTiledMap类直接通过TMXMapInfo的数据创建地图即可。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/03/27/tilemap02/" data-id="cimk86818000081cp5srdt9na" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cocos2d/">cocos2d</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tilemap/">tilemap</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/03/26/tilemap01/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Cocos2dx:TileMap的使用（一）</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+<!-- 
+ -->
+
+
+<section id="comments">
+  <!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="post-tilemap02" data-title="Cocos2dx:TileMap的使用（二）" data-url="http://yoursite.com/2016/03/27/tilemap02/"></div>
+  <!-- 多说评论框 end -->
+  <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:'kjtang'};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0] 
+       || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+    </script>
+  <!-- 多说公共JS代码 end -->
+</section>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/chipmunk/">chipmunk</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cocos2d/">cocos2d</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tilemap/">tilemap</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/物理引擎/">物理引擎</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/chipmunk/" style="font-size: 10px;">chipmunk</a> <a href="/tags/cocos2d/" style="font-size: 20px;">cocos2d</a> <a href="/tags/tilemap/" style="font-size: 15px;">tilemap</a> <a href="/tags/物理引擎/" style="font-size: 10px;">物理引擎</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/03/27/tilemap02/">Cocos2dx:TileMap的使用（二）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/26/tilemap01/">Cocos2dx:TileMap的使用（一）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/04/physics/">Cocos2dx:物理引擎碰撞检测</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/21/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 KJTang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>
