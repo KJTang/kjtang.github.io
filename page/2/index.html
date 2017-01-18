@@ -61,10 +61,10 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-cocos2d-render" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-cocos2d-lua-binding" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2016/04/13/cocos2d-render/" class="article-date">
-  <time datetime="2016-04-13T13:52:41.000Z" itemprop="datePublished">2016-04-13</time>
+    <a href="/2016/07/08/cocos2d-lua-binding/" class="article-date">
+  <time datetime="2016-07-08T11:41:11.000Z" itemprop="datePublished">2016-07-08</time>
 </a>
     
   </div>
@@ -75,7 +75,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2016/04/13/cocos2d-render/">Cocos2dx:绘制流程</a>
+      <a class="article-title" href="/2016/07/08/cocos2d-lua-binding/">Cocos2d-lua绑定自定义c++类</a>
     </h1>
   
 
@@ -83,461 +83,39 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h3 id="cocos2d_u7ED8_u5236_u6D41_u7A0B"><a href="#cocos2d_u7ED8_u5236_u6D41_u7A0B" class="headerlink" title="cocos2d绘制流程"></a>cocos2d绘制流程</h3><p>cocos2d进行绘制主要分成了三个步骤：   </p>
-<ol>
-<li>每一个ui元素提交绘制命令(RenderCommand)到绘制队列(RenderQueue)  </li>
-<li>绘制队列对将要绘制的元素进行排序，确定绘制顺序  </li>
-<li>Renderer执行绘制命令进行绘制  </li>
-</ol>
-<h4 id="ui_u6811"><a href="#ui_u6811" class="headerlink" title="ui树"></a>ui树</h4><p>cocos2d的ui元素是通过一个树状结构来管理的，树的每个节点都是Node及其子类，例如正在显示的一个场景，Scene为树根，通过addChild方法添加的Layer、Sprite等都是其子节点。<br>cocos2d启动进入主循环后，每次循环都会遍历一边ui树，Director的mainloop方法如下：   </p>
-<pre><code class="c++"><span class="keyword">void</span> DisplayLinkDirector::mainLoop()
-{
-    <span class="keyword">if</span> (_purgeDirectorInNextLoop)
-    {
-        _purgeDirectorInNextLoop = <span class="literal">false</span>;
-        purgeDirector();
-    }
-    <span class="keyword">else</span> <span class="keyword">if</span> (_restartDirectorInNextLoop)
-    {
-        _restartDirectorInNextLoop = <span class="literal">false</span>;
-        restartDirector();
-    }
-    <span class="keyword">else</span> <span class="keyword">if</span> (! _invalid)
-    {
-        drawScene();
-        <span class="comment">// release the objects</span>
-        PoolManager::getInstance()-&gt;getCurrentPool()-&gt;clear();
-    }
-}
-</code></pre>
-<p>跟绘制有关的即drawScene方法了，跳转过去，在Director::drawScene()中有：   </p>
-<pre><code class="c++">    <span class="keyword">if</span> (_runningScene)
-    {
-<span class="meta">#<span class="meta-keyword">if</span> (CC_USE_PHYSICS || (CC_USE_3D_PHYSICS &amp;&amp; CC_ENABLE_BULLET_INTEGRATION) || CC_USE_NAVMESH)</span>
-        _runningScene-&gt;stepPhysicsAndNavigation(_deltaTime);
-<span class="meta">#<span class="meta-keyword">endif</span></span>
-        <span class="comment">//clear draw stats</span>
-        _renderer-&gt;clearDrawStats();
-
-        <span class="comment">//render the scene</span>
-        _runningScene-&gt;render(_renderer);
-
-        _eventDispatcher-&gt;dispatchEvent(_eventAfterVisit);
-    }
-</code></pre>
-<p>_runningScene就是当前正在显示的Scene，跳转到void Scene::render(Renderer* renderer)中，看到这么一句：   </p>
-<pre><code class="c++"><span class="comment">//visit the scene</span>
-visit(renderer, transform, <span class="number">0</span>);
-</code></pre>
-<p>这一句就是通过递归的方式来遍历ui树，visit方法在Node类中有实现，Scene并没有重写，所以看看Node的实现：   </p>
-<pre><code class="c++"><span class="keyword">void</span> Node::visit(Renderer* renderer, <span class="keyword">const</span> Mat4 &amp;parentTransform, <span class="keyword">uint32_t</span> parentFlags)
-{
-    <span class="comment">// quick return if not visible. children won't be drawn.</span>
-    <span class="keyword">if</span> (!_visible)
-    {
-        <span class="keyword">return</span>;
-    }
-
-    <span class="keyword">uint32_t</span> flags = processParentFlags(parentTransform, parentFlags);
-
-    <span class="comment">// IMPORTANT:</span>
-    <span class="comment">// To ease the migration to v3.0, we still support the Mat4 stack,</span>
-    <span class="comment">// but it is deprecated and your code should not rely on it</span>
-    _director-&gt;pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    _director-&gt;loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
-
-    <span class="keyword">bool</span> visibleByCamera = isVisitableByVisitingCamera();
-
-    <span class="keyword">int</span> i = <span class="number">0</span>;
-
-    <span class="keyword">if</span>(!_children.empty())
-    {
-        sortAllChildren();
-        <span class="comment">// draw children zOrder &lt; 0</span>
-        <span class="keyword">for</span>( ; i &lt; _children.size(); i++ )
-        {
-            <span class="keyword">auto</span> node = _children.at(i);
-
-            <span class="keyword">if</span> (node &amp;&amp; node-&gt;_localZOrder &lt; <span class="number">0</span>)
-                node-&gt;visit(renderer, _modelViewTransform, flags);
-            <span class="keyword">else</span>
-                <span class="keyword">break</span>;
-        }
-        <span class="comment">// self draw</span>
-        <span class="keyword">if</span> (visibleByCamera)
-            <span class="keyword">this</span>-&gt;draw(renderer, _modelViewTransform, flags);
-
-        <span class="keyword">for</span>(<span class="keyword">auto</span> it=_children.cbegin()+i; it != _children.cend(); ++it)
-            (*it)-&gt;visit(renderer, _modelViewTransform, flags);
-    }
-    <span class="keyword">else</span> <span class="keyword">if</span> (visibleByCamera)
-    {
-        <span class="keyword">this</span>-&gt;draw(renderer, _modelViewTransform, flags);
-    }
-
-    _director-&gt;popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-}
-</code></pre>
-<p>方法中先对此Node进行了一个可见判断，如果不可见，则不用绘制。如果此Node有子节点，则对子节点进行排序后递归调用visit方法。排序是通过子节点的zOrder来进行的，zOrder越小则排在越前面，先依次递归zOrder小于0的子节点，然后是自身，再然后是zOrder大于0的子节点。可以看出这是一个前序的遍历方法，确保了绘制顺序不出现问题。<br>Node绘制自身调用了一个draw方法，再到draw方法里：   </p>
-<pre><code class="c++"><span class="keyword">void</span> Node::draw(Renderer* renderer, <span class="keyword">const</span> Mat4 &amp;transform, <span class="keyword">uint32_t</span> flags)
-{
-}
-</code></pre>
-<p>嗯，是空的。因为Node并不是用来加载显示纹理的，前面提到显示纹理是交给了Sprite类，所以应该看Sprite类的draw方法：   </p>
-<pre><code class="c++"><span class="keyword">void</span> Sprite::draw(Renderer *renderer, <span class="keyword">const</span> Mat4 &amp;transform, <span class="keyword">uint32_t</span> flags)
-{
-<span class="meta">#<span class="meta-keyword">if</span> CC_USE_CULLING</span>
-    <span class="comment">// Don't do calculate the culling if the transform was not updated</span>
-    _insideBounds = (flags &amp; FLAGS_TRANSFORM_DIRTY) ? renderer-&gt;checkVisibility(transform, _contentSize) : _insideBounds;
-
-    <span class="keyword">if</span>(_insideBounds)
-<span class="meta">#<span class="meta-keyword">endif</span></span>
-    {
-        _trianglesCommand.init(_globalZOrder, _texture-&gt;getName(), getGLProgramState(), _blendFunc, _polyInfo.triangles, transform, flags);
-        renderer-&gt;addCommand(&amp;_trianglesCommand);
-    }
-}
-</code></pre>
-<p>_insideBounds是对此Sprite的可见性判断，如果不在屏幕内则裁剪掉，不参与绘制。<br>通过判断后，Sprite将一个RenderCommand提交到了Renderer。</p>
-<h4 id="RenderCommand"><a href="#RenderCommand" class="headerlink" title="RenderCommand"></a>RenderCommand</h4><p>cocos2d中RenderCommand有很多种，在RenderCommand类中定义了：  </p>
-<pre><code class="c++"><span class="keyword">enum</span> <span class="keyword">class</span> Type
-{
-    <span class="comment">/** Reserved type.*/</span>
-    UNKNOWN_COMMAND,
-    <span class="comment">/** Quad command, used for draw quad.*/</span>
-    QUAD_COMMAND,
-    <span class="comment">/**Custom command, used for calling callback for rendering.*/</span>
-    CUSTOM_COMMAND,
-    <span class="comment">/**Batch command, used for draw batches in texture atlas.*/</span>
-    BATCH_COMMAND,
-    <span class="comment">/**Group command, which can group command in a tree hierarchy.*/</span>
-    GROUP_COMMAND,
-    <span class="comment">/**Mesh command, used to draw 3D meshes.*/</span>
-    MESH_COMMAND,
-    <span class="comment">/**Primitive command, used to draw primitives such as lines, points and triangles.*/</span>
-    PRIMITIVE_COMMAND,
-    <span class="comment">/**Triangles command, used to draw triangles.*/</span>
-    TRIANGLES_COMMAND
-};
-</code></pre>
-<p>不同的RenderCommand会用在不同的地方，例如在Sprite里面用到的是TrianglesCommand：  </p>
-<pre><code class="c++"><span class="keyword">class</span> CC_DLL TrianglesCommand : <span class="keyword">public</span> RenderCommand
-{
-<span class="keyword">public</span>:
-    <span class="comment">/**The structure of Triangles. */</span>
-    <span class="keyword">struct</span> Triangles
-    {
-        <span class="comment">/**Vertex data pointer.*/</span>
-        V3F_C4B_T2F* verts;
-        <span class="comment">/**Index data pointer.*/</span>
-        <span class="keyword">unsigned</span> <span class="keyword">short</span>* indices;
-        <span class="comment">/**The number of vertices.*/</span>
-        <span class="keyword">ssize_t</span> vertCount;
-        <span class="comment">/**The number of indices.*/</span>
-        <span class="keyword">ssize_t</span> indexCount;
-    };
-    <span class="comment">// ...</span>
-<span class="keyword">protected</span>:
-    <span class="comment">/**Generate the material ID by textureID, glProgramState, and blend function.*/</span>
-    <span class="function"><span class="keyword">void</span> <span class="title">generateMaterialID</span><span class="params">()</span></span>;
-
-    <span class="comment">/**Generated material id.*/</span>
-    <span class="keyword">uint32_t</span> _materialID;
-    <span class="comment">/**OpenGL handle for texture.*/</span>
-    GLuint _textureID;
-    <span class="comment">/**GLprogramstate for the commmand. encapsulate shaders and uniforms.*/</span>
-    GLProgramState* _glProgramState;
-    <span class="comment">/**Blend function when rendering the triangles.*/</span>
-    BlendFunc _blendType;
-    <span class="comment">/**Rendered triangles.*/</span>
-    Triangles _triangles;
-    <span class="comment">/**Model view matrix when rendering the triangles.*/</span>
-    Mat4 _mv;
-};
-</code></pre>
-<p>（删去了一部分代码）其中定义了一个struct类用于描述三角形，其中V3F_C4B_T2F用于描述顶点信息（Vertices：顶点，3个float；Color：颜色，4位；Texture：纹理，2个float)，剩下三个分别是索引信息，顶点数和索引数。<br>所以可以看出RenderCommand实际上是对一些opengl参数的封装，遍历完ui树后，cocos2d再将opengl参数传递给opengl进行绘制。</p>
-<h4 id="Renderer"><a href="#Renderer" class="headerlink" title="Renderer"></a>Renderer</h4><p>RenderCommand提交完毕后，Renderer会根据绘制命令进行绘制。在Scene的render方法最后，调用了Renderer的render方法：  </p>
-<pre><code class="c++">renderer-&gt;render();
-</code></pre>
-<p>Renderer的render方法如下：  </p>
-<pre><code class="c++"><span class="keyword">void</span> Renderer::render()
-{
-    <span class="comment">//Uncomment this once everything is rendered by new renderer</span>
-    <span class="comment">//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);</span>
-
-    <span class="comment">//<span class="doctag">TODO:</span> setup camera or MVP</span>
-    _isRendering = <span class="literal">true</span>;
-
-    <span class="keyword">if</span> (_glViewAssigned)
-    {
-        <span class="comment">//Process render commands</span>
-        <span class="comment">//1. Sort render commands based on ID</span>
-        <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;renderqueue : _renderGroups)
-        {
-            renderqueue.sort();
-        }
-        visitRenderQueue(_renderGroups[<span class="number">0</span>]);
-    }
-    clean();
-    _isRendering = <span class="literal">false</span>;
-}
-</code></pre>
-<p>Renderer通过维护的RenderQueue数组来访问RenderCommand，默认的主队列是标记为0的RenderQueue，之后的RenderQueue跟GroupCommand有关，每一个GroupCommand会指向一个RenderQueue，这样就可以采用不同的绘制选项。<br>这里依次访问所有队列进行了排序，看看RenderQueue的sort方法：  </p>
-<pre><code class="c++"><span class="keyword">void</span> RenderQueue::sort()
-{
-    <span class="comment">// Don't sort _queue0, it already comes sorted</span>
-    <span class="built_in">std</span>::sort(<span class="built_in">std</span>::begin(_commands[QUEUE_GROUP::TRANSPARENT_3D]), <span class="built_in">std</span>::end(_commands[QUEUE_GROUP::TRANSPARENT_3D]), compare3DCommand);
-    <span class="built_in">std</span>::sort(<span class="built_in">std</span>::begin(_commands[QUEUE_GROUP::GLOBALZ_NEG]), <span class="built_in">std</span>::end(_commands[QUEUE_GROUP::GLOBALZ_NEG]), compareRenderCommand);
-    <span class="built_in">std</span>::sort(<span class="built_in">std</span>::begin(_commands[QUEUE_GROUP::GLOBALZ_POS]), <span class="built_in">std</span>::end(_commands[QUEUE_GROUP::GLOBALZ_POS]), compareRenderCommand);
-}
-</code></pre>
-<p>第一句是对3d的绘制命令进行了排序，这里暂且不去了解；后两句是对GlobalZOrder小于0和大于0的命令进行了排序，GlobalZOrder为0的不进行排序。<br>原因是所有ui元素默认的GlobalZOrder都是0, 在ui树的遍历过程中，实际上已经完成了这些ui元素的排序（前序遍历），故这里不需要再排序。GlobalZOrder的用途实际上是动态改变一个ui元素的绘制次序用的，所以一般情况下不需要对GlobalZOrder进行特殊的设置，这样可以减少性能消耗。</p>
-<p>接着render方法调用了visitRenderCommand方法：  </p>
-<pre><code class="c++"><span class="keyword">void</span> Renderer::visitRenderQueue(RenderQueue&amp; <span class="built_in">queue</span>)
-{
-    <span class="built_in">queue</span>.saveRenderState();
-
-    <span class="comment">//</span>
-    <span class="comment">//Process Global-Z = 0 Queue</span>
-    <span class="comment">//</span>
-    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; zZeroQueue = <span class="built_in">queue</span>.getSubQueue(RenderQueue::QUEUE_GROUP::GLOBALZ_ZERO);
-    <span class="keyword">if</span> (zZeroQueue.size() &gt; <span class="number">0</span>)
-    {
-        <span class="keyword">if</span>(_isDepthTestFor2D)
-        {
-            glEnable(GL_DEPTH_TEST);
-            glDepthMask(<span class="literal">true</span>);
-
-            RenderState::StateBlock::_defaultState-&gt;setDepthTest(<span class="literal">true</span>);
-            RenderState::StateBlock::_defaultState-&gt;setDepthWrite(<span class="literal">true</span>);
-
-        }
-        <span class="keyword">else</span>
-        {
-            glDisable(GL_DEPTH_TEST);
-            glDepthMask(<span class="literal">false</span>);
-
-            RenderState::StateBlock::_defaultState-&gt;setDepthTest(<span class="literal">false</span>);
-            RenderState::StateBlock::_defaultState-&gt;setDepthWrite(<span class="literal">false</span>);
-
-        }
-        <span class="keyword">for</span> (<span class="keyword">auto</span> it = zZeroQueue.cbegin(); it != zZeroQueue.cend(); ++it)
-        {
-            processRenderCommand(*it);
-        }
-        flush();
-    }
-
-    <span class="built_in">queue</span>.restoreRenderState();
-}
-</code></pre>
-<p>代码比较长，这里只保留GlobalZOrder为0的，方法开始时是一些opengl参数的处理，比如深度测试的开启与否，然后出现一句processRenderCommand，从名字上看应该是执行绘制命令，开始绘制了：   </p>
-<pre><code class="c++"><span class="keyword">void</span> Renderer::processRenderCommand(RenderCommand* command)
-{
-    <span class="keyword">auto</span> commandType = command-&gt;getType();
-    <span class="keyword">if</span>( RenderCommand::Type::TRIANGLES_COMMAND == commandType)
-    {
-        <span class="comment">//Draw if we have batched other commands which are not triangle command</span>
-        flush3D();
-        flushQuads();
-
-        <span class="comment">//Process triangle command</span>
-        <span class="keyword">auto</span> cmd = <span class="keyword">static_cast</span>&lt;TrianglesCommand*&gt;(command);
-
-        <span class="comment">//Draw batched Triangles if necessary</span>
-        <span class="keyword">if</span>(cmd-&gt;isSkipBatching() || _filledVertex + cmd-&gt;getVertexCount() &gt; VBO_SIZE || _filledIndex + cmd-&gt;getIndexCount() &gt; INDEX_VBO_SIZE)
-        {
-            CCASSERT(cmd-&gt;getVertexCount()&gt;= <span class="number">0</span> &amp;&amp; cmd-&gt;getVertexCount() &lt; VBO_SIZE, <span class="string">"VBO for vertex is not big enough, please break the data down or use customized render command"</span>);
-            CCASSERT(cmd-&gt;getIndexCount()&gt;= <span class="number">0</span> &amp;&amp; cmd-&gt;getIndexCount() &lt; INDEX_VBO_SIZE, <span class="string">"VBO for index is not big enough, please break the data down or use customized render command"</span>);
-            <span class="comment">//Draw batched Triangles if VBO is full</span>
-            drawBatchedTriangles();
-        }
-
-        <span class="comment">//Batch Triangles</span>
-        _batchedCommands.push_back(cmd);
-
-        fillVerticesAndIndices(cmd);
-
-        <span class="keyword">if</span>(cmd-&gt;isSkipBatching())
-        {
-            drawBatchedTriangles();
-        }
-
-    }
-    <span class="comment">// ...</span>
-    <span class="keyword">else</span>
-    {
-        CCLOGERROR(<span class="string">"Unknown commands in renderQueue"</span>);
-    }
-}
-</code></pre>
-<p>这个方法主要是根据不同的绘制命令进行不同的处理，代码较多，只保留了TrianglesCommand的处理。对TrianglesCommand的处理是，首先先绘制之前缓存的其它种类命令，例如QuadCommand等，然后如果缓存队列不满或者没有设置成不参与批绘制，则将当前命令添加到缓存队列，留带稍后一起处理。  </p>
-<p>drawBatchedTriangles就是对已经缓存的TrianglesCommand进行绘制的方法：  </p>
-<pre><code class="c++">void Renderer::drawBatchedTriangles()
-{
-    //TODO: we can improve the draw performance by insert material switching command before hand.
-
-    int indexToDraw = 0;
-    int startIndex = 0;
-
-    //Upload buffer to VBO
-    if(_filledVertex &lt;= 0 || _filledIndex &lt;= 0 || _batchedCommands.empty())
-    {
-        return;
-    }
-
-    if (Configuration::getInstance()-&gt;supportsShareableVAO())
-    {
-        //Bind VAO
-        GL::bindVAO(_buffersVAO);
-        //Set VBO data
-        glBindBuffer(GL_ARRAY_BUFFER, _buffersVBO[0]);
-
-        // option 1: subdata
-//        glBufferSubData(GL_ARRAY_BUFFER, sizeof(_quads[0])*start, sizeof(_quads[0]) * n , &amp;_quads[start] );
-
-        // option 2: data
-//        glBufferData(GL_ARRAY_BUFFER, sizeof(quads_[0]) * (n-start), &amp;quads_[start], GL_DYNAMIC_DRAW);
-
-        // option 3: orphaning + glMapBuffer
-        glBufferData(GL_ARRAY_BUFFER, sizeof(_verts[0]) * _filledVertex, nullptr, GL_DYNAMIC_DRAW);
-        void *buf = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-        memcpy(buf, _verts, sizeof(_verts[0])* _filledVertex);
-        glUnmapBuffer(GL_ARRAY_BUFFER);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _buffersVBO[1]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_indices[0]) * _filledIndex, _indices, GL_STATIC_DRAW);
-    }
-    else
-    {
-#define kQuadSize sizeof(_verts[0])
-        glBindBuffer(GL_ARRAY_BUFFER, _buffersVBO[0]);
-
-        glBufferData(GL_ARRAY_BUFFER, sizeof(_verts[0]) * _filledVertex , _verts, GL_DYNAMIC_DRAW);
-
-        GL::enableVertexAttribs(GL::VERTEX_ATTRIB_FLAG_POS_COLOR_TEX);
-
-        // vertices
-        glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 3, GL_FLOAT, GL_FALSE, kQuadSize, (GLvoid*) offsetof(V3F_C4B_T2F, vertices));
-
-        // colors
-        glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, kQuadSize, (GLvoid*) offsetof(V3F_C4B_T2F, colors));
-
-        // tex coords
-        glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_TEX_COORD, 2, GL_FLOAT, GL_FALSE, kQuadSize, (GLvoid*) offsetof(V3F_C4B_T2F, texCoords));
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _buffersVBO[1]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_indices[0]) * _filledIndex, _indices, GL_STATIC_DRAW);
-    }
-
-    //Start drawing verties in batch
-    for(const auto&amp; cmd : _batchedCommands)
-    {
-        auto newMaterialID = cmd-&gt;getMaterialID();
-        if(_lastMaterialID != newMaterialID || newMaterialID == MATERIAL_ID_DO_NOT_BATCH)
-        {
-            //Draw quads
-            if(indexToDraw &gt; 0)
-            {
-                glDrawElements(GL_TRIANGLES, (GLsizei) indexToDraw, GL_UNSIGNED_SHORT, (GLvoid*) (startIndex*sizeof(_indices[0])) );
-                _drawnBatches++;
-                _drawnVertices += indexToDraw;
-
-                startIndex += indexToDraw;
-                indexToDraw = 0;
-            }
-
-            //Use new material
-            cmd-&gt;useMaterial();
-            _lastMaterialID = newMaterialID;
-        }
-
-        indexToDraw += cmd-&gt;getIndexCount();
-    }
-
-    //Draw any remaining triangles
-    if(indexToDraw &gt; 0)
-    {
-        glDrawElements(GL_TRIANGLES, (GLsizei) indexToDraw, GL_UNSIGNED_SHORT, (GLvoid*) (startIndex*sizeof(_indices[0])) );
-        _drawnBatches++;
-        _drawnVertices += indexToDraw;
-    }
-
-    if (Configuration::getInstance()-&gt;supportsShareableVAO())
-    {
-        //Unbind VAO
-        GL::bindVAO(0);
-    }
-    else
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-
-    _batchedCommands.clear();
-    _filledVertex = 0;
-    _filledIndex = 0;
-}
-</code></pre>
-<p>这里做了三步处理：  </p>
-<ol>
-<li>将顶点、颜色、纹理等数据缓存到GPU  </li>
-<li>批绘制三角形  </li>
-<li>绘制没有被批绘制的剩余三角形  </li>
-</ol>
-<p>比较值得提及是第2点，cocos2d在这里做了一个自动批绘制的功能，即如下这段代码：  </p>
-<pre><code class="c++">//Start drawing verties in batch
-for(const auto&amp; cmd : _batchedCommands)
-{
-    auto newMaterialID = cmd-&gt;getMaterialID();
-    if(_lastMaterialID != newMaterialID || newMaterialID == MATERIAL_ID_DO_NOT_BATCH)
-    {
-        //Draw quads
-        if(indexToDraw &gt; 0)
-        {
-            glDrawElements(GL_TRIANGLES, (GLsizei) indexToDraw, GL_UNSIGNED_SHORT, (GLvoid*) (startIndex*sizeof(_indices[0])) );
-            _drawnBatches++;
-            _drawnVertices += indexToDraw;
-
-            startIndex += indexToDraw;
-            indexToDraw = 0;
-        }
-
-        //Use new material
-        cmd-&gt;useMaterial();
-        _lastMaterialID = newMaterialID;
-    }
-
-    indexToDraw += cmd-&gt;getIndexCount();
-}
-</code></pre>
-<p>如果上一条绘制命令所使用的materialID与当前的相同，先不做处理，直到materialID不同的绘制命令出现，则将之前的命令统一绘制。<br>其原理是将使用同一纹理、同一着色器、同一混合方程等gl参数的命令集中到一起来绘制，这样可以减少glDraw的调用次数，提升性能。  </p>
-<p>至于materialID是什么，在TrianglesCommand里面可以看到，其生成的方法为：  </p>
-<pre><code class="c++"><span class="keyword">void</span> TrianglesCommand::generateMaterialID()
-{
-
-    <span class="keyword">if</span>(_glProgramState-&gt;getUniformCount() &gt; <span class="number">0</span>)
-    {
-        _materialID = Renderer::MATERIAL_ID_DO_NOT_BATCH;
-    }
-    <span class="keyword">else</span>
-    {
-        <span class="keyword">int</span> glProgram = (<span class="keyword">int</span>)_glProgramState-&gt;getGLProgram()-&gt;getProgram();
-        <span class="keyword">int</span> intArray[<span class="number">4</span>] = { glProgram, (<span class="keyword">int</span>)_textureID, (<span class="keyword">int</span>)_blendType.src, (<span class="keyword">int</span>)_blendType.dst};
-
-        _materialID = XXH32((<span class="keyword">const</span> <span class="keyword">void</span>*)intArray, <span class="keyword">sizeof</span>(intArray), <span class="number">0</span>);
-    }
-}
-</code></pre>
-<p>当此ui元素使用了非默认着色器时，其materialID会被设置为Renderer::MATERIAL_ID_DO_NOT_BATCH，将无法参与自动批绘制。<br>如果采用默认处理，则会通过其使用的着色器、纹理以及混合方程来计算一个hash值，materialID就是这个hash值。就是说，判断两个ui元素能否参与自动批绘制，只需要判断materialID是否相同，如果相同，则说明二者的gl参数一致，可以在同一次glDraw里面完成绘制。<br>不过自动批绘制只能将相邻的RenderCommand进行合并，所以写程序的时候应该考虑到这一点来进行优化。</p>
-<h4 id="u603B_u7ED3"><a href="#u603B_u7ED3" class="headerlink" title="总结"></a>总结</h4><p>cocos2d绘制的大致流程就是以上，即：<br>每次游戏循环，对ui树进行遍历时，cocos2d不会立即进行绘制，而是让每一个ui元素提交一个绘制命令（RenderCommand）。<br>遍历完一次ui树后，会生成一个绘制命令队列（RenderQueue），绘制器（Renderer）会先对绘制队列进行排序，然后开始绘制。<br>绘制过程中采用了自动批绘制的技术对绘制进行优化，即合并使用同一着色器、纹理以及混合方程的绘制命令，以达到性能优化的目的。</p>
+        <p>最近在使用cocos2d-lua写一些小游戏，遇到了需要在lua中调用自定义的c++类的情况，于是花了一下午时间来踩这个坑，目前终于成功跑起来了，故在此做一个记录。</p>
+<ul>
+<li><h4 id="lua_u8C03_u7528_u9759_u6001c++_u51FD_u6570"><a href="#lua_u8C03_u7528_u9759_u6001c++_u51FD_u6570" class="headerlink" title="lua调用静态c++函数"></a>lua调用静态c++函数</h4>在lua中调用c++有很多中办法，例如可以直接使用lua_register来注册一个静态函数。如下：  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;lua.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;lualib.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;lauxlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">test</span><span class="params">(lua_State *L)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">int</span> n = lua_tonumber(L, <span class="number">1</span>);</span><br><span class="line">  lua_pushnumber(L, n + <span class="number">1</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  lua_State *L = lua_open();</span><br><span class="line">  luaL_openlibs(L);</span><br><span class="line">  lua_register(L, <span class="string">"test"</span>, test);</span><br><span class="line">  luaL_dofile(L, <span class="string">"a.lua"</span>);</span><br><span class="line">  lua_close(L);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>在test函数中，lua_tonumber(L, 1)获取了L环境中给test输入的第一个参数，因为lua与c++的交互是通过一个栈来进行的，所以函数返回之前使用了lua_pushnumber来向栈中压入一个值。注意在lua中函数返回的可以不止一个值，所以在这里也可以多次push，最后test的return值意味着此函数一共返回了多少个值。<br>test函数定义好之后，通过lua_register向lua环境注册这个函数，这样在lua代码中就可以对此函数进行调用了。<br><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">print</span>(test(<span class="number">1</span>))</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><h4 id="lua_u8C03_u7528_u81EA_u5B9A_u4E49c++_u7C7B"><a href="#lua_u8C03_u7528_u81EA_u5B9A_u4E49c++_u7C7B" class="headerlink" title="lua调用自定义c++类"></a>lua调用自定义c++类</h4>因为在实际使用中不可能只使用到静态函数，还要经常使用自己定义的c++类，如果直接使用类似于lua_register的方式来注册c++类，那么工作量会非常大。这时候可以使用类似于tolua++之类的第三方工具来进行注册，但是这里不再赘述，就直接讲如何使用cocos2d自带的bindings-generator工具进行注册。  <h5 id="u5B9E_u73B0_u6240_u9700_u7684c++_u7C7B"><a href="#u5B9E_u73B0_u6240_u9700_u7684c++_u7C7B" class="headerlink" title="实现所需的c++类"></a>实现所需的c++类</h5>首先给出一个示例用的c++类：  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// MyClass.h</span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">"cocos2d.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> cocos2d;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> MyClass : <span class="keyword">public</span> Ref &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    MyClass() &#123;&#125;</span><br><span class="line">    ~MyClass() &#123;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    CREATE_FUNC(MyClass);</span><br><span class="line">    <span class="comment">// used to test</span></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">test</span><span class="params">(<span class="keyword">int</span> i)</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// MyClass.cpp</span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">"MyClass.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> MyClass::test(<span class="keyword">int</span> i) &#123;</span><br><span class="line">  <span class="keyword">return</span> i + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里应该注意一点，就是在cocos2d中的自定义类应当继承ref或者其子类，因为这样可以让cocos2d将内存管理起来，不需要自己来操心。<br>如果lua工程目录为LuaTest/，则将c++类的两个文件放到LuaTest/frameworks/runtime-src/Classes/下面，因为新添加这两个文件，所以也要记得修改对应的makefile，例如我是在linux上进行测试的，则修改CMakeList.txt，将参加编译的文件修改为：<br><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(GAME_SRC</span><br><span class="line">  runtime-src/proj.linux/main.cpp</span><br><span class="line">  runtime-src/Classes/AppDelegate.cpp</span><br><span class="line">  runtime-src/Classes/MyClass.cpp</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>即添加了刚刚创建的MyClass。如果是其它平台，例如android，则修改对应的Android.mk，如果是xcode的工程，则需要将文件拖入工程。  </p>
+<h5 id="u521B_u5EFA_u914D_u7F6E_u6587_u4EF6_uFF0C_u5E76_u4F7F_u7528_u811A_u672C_u751F_u6210_u6CE8_u518C_u7528c++_u6587_u4EF6"><a href="#u521B_u5EFA_u914D_u7F6E_u6587_u4EF6_uFF0C_u5E76_u4F7F_u7528_u811A_u672C_u751F_u6210_u6CE8_u518C_u7528c++_u6587_u4EF6" class="headerlink" title="创建配置文件，并使用脚本生成注册用c++文件"></a>创建配置文件，并使用脚本生成注册用c++文件</h5><p>接下来，需要使用bindings-generator来自动生成一个用于注册的c++文件。此时切换目录到LuaTest/frameworks/cocos2d-x/tools/tolua/下，<br>可以看到这里有很多.ini文件，以及一个genbindings.py文件。<br>.ini文件定义了从c++文件生成用于注册的c++文件的规则，而genbindings.py则是cocos2d提供的脚本，可以根据ini规则生成用于注册的c++文件。</p>
+<p>为了注册MyClass文件，简单的话可以直接复制一个ini文件，例如cocos2dx.ini，然后对其进行修改，重点要修改的内容为：<br><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">[MyClass]</span></span><br><span class="line"><span class="setting">prefix           = <span class="value">MyClass</span></span></span><br><span class="line"><span class="setting">target_namespace = <span class="value">custom</span></span></span><br><span class="line"><span class="setting">headers          = <span class="value">%(cocosdir)s/../runtime-src/Classes/MyClass.h</span></span></span><br><span class="line"><span class="setting">classes          = <span class="value">MyClass</span></span></span><br></pre></td></tr></table></figure></p>
+<p>其中target_namespace为命名空间，例如cocos2d在lua中的命名空间就为cc。headers指向我们一开始创建的原始c++文件，classes中可以声明多个类，用空格隔开；因为我们的文件中只有MyClass一个类，所以这里就只写MyClass了。<br>修改完，命名为MyClass.ini保存。<br>然后是对脚本进行修改。其实可以直接修改genbindings.py，但是因为其中涉及到太多文件，每次运行的时间可能会太长，所以这里又拷贝一份，命名为genbindings_custom.py。<br>打开文件，在141行左右，修改：<br><figure class="highlight ocaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">cmd_args = &#123;<span class="symbol">'cocos2dx</span>.ini' : (<span class="symbol">'cocos2d</span>-x', <span class="symbol">'lua_cocos2dx_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_extension</span>.ini' : (<span class="symbol">'cocos2dx_extension'</span>, <span class="symbol">'lua_cocos2dx_extension_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_ui</span>.ini' : (<span class="symbol">'cocos2dx_ui'</span>, <span class="symbol">'lua_cocos2dx_ui_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_studio</span>.ini' : (<span class="symbol">'cocos2dx_studio'</span>, <span class="symbol">'lua_cocos2dx_studio_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_spine</span>.ini' : (<span class="symbol">'cocos2dx_spine'</span>, <span class="symbol">'lua_cocos2dx_spine_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_physics</span>.ini' : (<span class="symbol">'cocos2dx_physics'</span>, <span class="symbol">'lua_cocos2dx_physics_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_experimental_video</span>.ini' : (<span class="symbol">'cocos2dx_experimental_video'</span>, <span class="symbol">'lua_cocos2dx_experimental_video_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_experimental</span>.ini' : (<span class="symbol">'cocos2dx_experimental'</span>, <span class="symbol">'lua_cocos2dx_experimental_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_controller</span>.ini' : (<span class="symbol">'cocos2dx_controller'</span>, <span class="symbol">'lua_cocos2dx_controller_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_cocosbuilder</span>.ini': (<span class="symbol">'cocos2dx_cocosbuilder'</span>, <span class="symbol">'lua_cocos2dx_cocosbuilder_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_cocosdenshion</span>.ini': (<span class="symbol">'cocos2dx_cocosdenshion'</span>, <span class="symbol">'lua_cocos2dx_cocosdenshion_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_3d</span>.ini': (<span class="symbol">'cocos2dx_3d'</span>, <span class="symbol">'lua_cocos2dx_3d_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_audioengine</span>.ini': (<span class="symbol">'cocos2dx_audioengine'</span>, <span class="symbol">'lua_cocos2dx_audioengine_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_csloader</span>.ini' : (<span class="symbol">'cocos2dx_csloader'</span>, <span class="symbol">'lua_cocos2dx_csloader_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_experimental_webview</span>.ini' : (<span class="symbol">'cocos2dx_experimental_webview'</span>, <span class="symbol">'lua_cocos2dx_experimental_webview_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_physics3d</span>.ini' : (<span class="symbol">'cocos2dx_physics3d'</span>, <span class="symbol">'lua_cocos2dx_physics3d_auto'</span>), \</span><br><span class="line">            <span class="symbol">'cocos2dx_navmesh</span>.ini' : (<span class="symbol">'cocos2dx_navmesh'</span>, <span class="symbol">'lua_cocos2dx_navmesh_auto'</span>), \</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>为：<br><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="setting">cmd_args = <span class="value">&#123;<span class="string">'MyClass.ini'</span> : (<span class="string">'MyClass'</span>, <span class="string">"lua_customclass_auto"</span>)&#125;</span></span></span><br></pre></td></tr></table></figure></p>
+<p>其意义就是根据MyClass.ini文件自动生成用于注册的lua_customclass_auto.cpp以及.hpp文件。修改完后保存退出。在命令行切换到这个目录，然后运行脚本：<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$python genbindings_custom.py</span><br></pre></td></tr></table></figure></p>
+<p>这里可能碰到一个坑，要注意一下，就是，运行脚本可能会出现这样的错误：<br><figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">====</span><br><span class="line">Errors in parsing headers:</span><br><span class="line">1. &lt;severity = Fatal,</span><br><span class="line">    location = &lt;SourceLocation file '/home/xxx/NDK/platforms/android-14/arch-arm/usr/include/android/log.h', line 70, column 10&gt;,</span><br><span class="line">    details = "'stdarg.h' file not found"&gt;</span><br><span class="line">====</span><br></pre></td></tr></table></figure></p>
+<p>这个错误的原因是genbindings_custom.py脚本与ndk不兼容的问题，因为找不的ndk中的llvm-3.3文件夹，如果出现这个错误，先查看自己ndk目录的toolchains文件夹，看看自己是什么版本的llvm。我这里有llvm-3.5和llvm-3.6两个相关的文件夹，而在genbindings_custom.py脚本中有这么一段：<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="string">'3.4'</span> <span class="keyword">in</span> llvm_path:</span><br><span class="line">    config.<span class="function"><span class="title">set</span><span class="params">(<span class="string">'DEFAULT'</span>, <span class="string">'clang_version'</span>, <span class="string">'3.4'</span>)</span></span></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    config.<span class="function"><span class="title">set</span><span class="params">(<span class="string">'DEFAULT'</span>, <span class="string">'clang_version'</span>, <span class="string">'3.3'</span>)</span></span></span><br></pre></td></tr></table></figure></p>
+<p>这一段应该是用于处理早期的ndk的脚本，我的ndk应该比较新，在这里不适用，所以应该进行修改。为了偷懒，我直接将3.3改为了3.5：<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="string">'3.4'</span> <span class="keyword">in</span> llvm_path:</span><br><span class="line">    config.<span class="function"><span class="title">set</span><span class="params">(<span class="string">'DEFAULT'</span>, <span class="string">'clang_version'</span>, <span class="string">'3.4'</span>)</span></span></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    config.<span class="function"><span class="title">set</span><span class="params">(<span class="string">'DEFAULT'</span>, <span class="string">'clang_version'</span>, <span class="string">'3.5'</span>)</span></span></span><br></pre></td></tr></table></figure></p>
+<p>运行脚本，现在显示成功生成了：<br><figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="code">---------------------------------</span><br><span class="line">Generating lua bindings succeeds.</span><br><span class="line">---------------------------------</span></span><br></pre></td></tr></table></figure></p>
+<h5 id="u5728AppDelegate-cpp_u4E2D_u6CE8_u518C_u81EA_u5B9A_u4E49_u7684c++_u7C7B"><a href="#u5728AppDelegate-cpp_u4E2D_u6CE8_u518C_u81EA_u5B9A_u4E49_u7684c++_u7C7B" class="headerlink" title="在AppDelegate.cpp中注册自定义的c++类"></a>在AppDelegate.cpp中注册自定义的c++类</h5><p>自动生成的cpp文件在LuaTest/frameworks/cocos2d-x/cocos/scripting/lua-bindings/auto/路径下，因为我们之前在脚本中设置的名字为lua_customclass_auto，所以在这里可以找到lua_customclass_auto.cpp，lua_customclass_auto.hpp两个文件。<br>将这两个文件拷贝到MyClass.cpp所在路径下，并且同样的在makefile中添加lua_customclass_auto.cpp文件。例如我的Linux的设置是修改CMakeList.txt：<br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">set(GAME_SRC</span><br><span class="line">  <span class="keyword">runtime</span>-src<span class="regexp">/proj.linux/m</span>ain.cpp</span><br><span class="line">  <span class="keyword">runtime</span>-src<span class="regexp">/Classes/</span>AppDelegate.cpp</span><br><span class="line">  <span class="keyword">runtime</span>-src<span class="regexp">/Classes/My</span><span class="keyword">Class</span>.cpp</span><br><span class="line">  <span class="keyword">runtime</span>-src<span class="regexp">/Classes/</span>lua_customclass_auto.cpp</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>生成的lua_customclass_auto文件就是脚本读取MyClass后根据其内容自动生成的用于注册的文件，打开lua_customclass_auto.hpp可以看到：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">"base/ccConfig.h"</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">ifndef</span> __MyClass_h__</span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> __MyClass_h__</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">"C"</span> &#123;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">"tolua++.h"</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">register_all_MyClass</span><span class="params">(lua_State* tolua_S)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#<span class="keyword">endif</span> <span class="comment">// __MyClass_h__</span></span></span><br></pre></td></tr></table></figure></p>
+<p>这里有一个register_all_MyClass方法，调用这个方法就可以向lua注册我们自定义的c++类。所以最后，打开AppDelegate.cpp，找到lua注册相关的代码，修改为：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// register lua module</span></span><br><span class="line"><span class="keyword">auto</span> engine = LuaEngine::getInstance();</span><br><span class="line">ScriptEngineManager::getInstance()-&gt;setScriptEngine(engine);</span><br><span class="line">lua_State* L = engine-&gt;getLuaStack()-&gt;getLuaState();</span><br><span class="line">lua_module_register(L);</span><br><span class="line"></span><br><span class="line">register_all_packages();</span><br><span class="line"></span><br><span class="line">LuaStack* <span class="built_in">stack</span> = engine-&gt;getLuaStack();</span><br><span class="line"><span class="built_in">stack</span>-&gt;setXXTEAKeyAndSign(<span class="string">"2dxLua"</span>, <span class="built_in">strlen</span>(<span class="string">"2dxLua"</span>), <span class="string">"XXTEA"</span>, <span class="built_in">strlen</span>(<span class="string">"XXTEA"</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">//register custom function</span></span><br><span class="line"><span class="comment">//LuaStack* stack = engine-&gt;getLuaStack();</span></span><br><span class="line"><span class="comment">//register_custom_function(stack-&gt;getLuaState());</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 这里注册自定义的c++类</span></span><br><span class="line">register_all_MyClass(<span class="built_in">stack</span>-&gt;getLuaState());</span><br></pre></td></tr></table></figure></p>
+<p>并且记得在AppDelegate.cpp中include一下lua_customclass_auto.hpp文件，不然没法访问到register_all_MyClass函数。</p>
+<p>最后，在lua代码中进行测试：<br><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> customClass = custom.MyClass:create()</span><br><span class="line"><span class="built_in">print</span>(<span class="string">"lua bind: "</span>..customClass:test(<span class="number">100</span>))</span><br></pre></td></tr></table></figure></p>
+<p>没错误的话就成功啦。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/04/13/cocos2d-render/" data-id="ciqdt1gsu000b1vcps8smq21h" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/07/08/cocos2d-lua-binding/" data-id="ciy30454t00003gcp87ym55ap" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cocos2d/">cocos2d</a></li></ul>
@@ -554,7 +132,7 @@ for(const auto&amp; cmd : _batchedCommands)
   
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
+      <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -567,7 +145,7 @@ for(const auto&amp; cmd : _batchedCommands)
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/chipmunk/">chipmunk</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cocos2d/">cocos2d</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tilemap/">tilemap</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/物理引擎/">物理引擎</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/chipmunk/">chipmunk</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cocos2d/">cocos2d</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gamedesign/">gamedesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tilemap/">tilemap</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/物理引擎/">物理引擎</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -576,7 +154,7 @@ for(const auto&amp; cmd : _batchedCommands)
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/chipmunk/" style="font-size: 10px;">chipmunk</a> <a href="/tags/cocos2d/" style="font-size: 20px;">cocos2d</a> <a href="/tags/tilemap/" style="font-size: 15px;">tilemap</a> <a href="/tags/物理引擎/" style="font-size: 10px;">物理引擎</a>
+      <a href="/tags/chipmunk/" style="font-size: 10px;">chipmunk</a> <a href="/tags/cocos2d/" style="font-size: 20px;">cocos2d</a> <a href="/tags/gamedesign/" style="font-size: 10px;">gamedesign</a> <a href="/tags/tilemap/" style="font-size: 15px;">tilemap</a> <a href="/tags/物理引擎/" style="font-size: 10px;">物理引擎</a>
     </div>
   </div>
 
@@ -585,7 +163,7 @@ for(const auto&amp; cmd : _batchedCommands)
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">1</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">January 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -595,6 +173,10 @@ for(const auto&amp; cmd : _batchedCommands)
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2017/01/18/gamedesign-psychology/">&quot;游戏心理学&quot;相关笔记</a>
+          </li>
         
           <li>
             <a href="/2016/07/08/cocos2d-lua-binding/">Cocos2d-lua绑定自定义c++类</a>
@@ -612,10 +194,6 @@ for(const auto&amp; cmd : _batchedCommands)
             <a href="/2016/03/26/cocos2d-tilemap01/">Cocos2dx:TileMap的使用（一）</a>
           </li>
         
-          <li>
-            <a href="/2016/03/04/cocos2d-physics/">Cocos2dx:物理引擎碰撞检测</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -628,7 +206,7 @@ for(const auto&amp; cmd : _batchedCommands)
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2016 KJTang<br>
+      &copy; 2017 KJTang<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

@@ -61,10 +61,10 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-cocos2d-physics" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-cocos2d-tilemap01" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2016/03/04/cocos2d-physics/" class="article-date">
-  <time datetime="2016-03-04T10:11:08.000Z" itemprop="datePublished">2016-03-04</time>
+    <a href="/2016/03/26/cocos2d-tilemap01/" class="article-date">
+  <time datetime="2016-03-26T12:47:32.000Z" itemprop="datePublished">2016-03-26</time>
 </a>
     
   </div>
@@ -75,7 +75,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/04/cocos2d-physics/">Cocos2dx:物理引擎碰撞检测</a>
+      <a class="article-title" href="/2016/03/26/cocos2d-tilemap01/">Cocos2dx:TileMap的使用（一）</a>
     </h1>
   
 
@@ -83,29 +83,158 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>在cocos2dx中使用物理引擎的时候，对物理世界(PhysicsWorld)中的物体设置好碰撞检测的规则是很常见的需求，对Node调用其getPhysicsBody可以获得它的PhysicsBody，通过setGroup，setCategoryBitmask，setCollisionBitmask，setContactTestBitmask等API可以设置碰撞检测的规则，<br>下面进行一些总结：</p>
+        <p>针对如何在cocos2d中使用tilemap来加载地图的步骤网上基本都有教程，比如怎么使用Tiled创建tilemap，以及如何在cocos2d中加载，网上都能搜索到，这里只简单说一下，不列出具体步骤。<br>这篇文章主要是对tilemap文件的格式以及cocos2d如何加载tilemap做了一个简单的分析，以备日后查看。</p>
 <ul>
-<li><h4 id="void_setGroup_28int_group_29"><a href="#void_setGroup_28int_group_29" class="headerlink" title="void setGroup(int group)"></a>void setGroup(int group)</h4><p>  其优先级比bit masks的优先级高。</p>
-<p>  如果两PhysicsBody的group是正数且相等的话，就一定碰撞；如果group是负数且相等的话，就一定不会碰撞。</p>
-</li>
-<li><h4 id="void_setCategoryBitmask_28int_bitmask_29"><a href="#void_setCategoryBitmask_28int_bitmask_29" class="headerlink" title="void setCategoryBitmask(int bitmask)"></a>void setCategoryBitmask(int bitmask)</h4><p>  这个是用来设置该PhysicsBody的类别的方法，类别用bitmask表示，bitmask为一个32位的整型变量，每一位代表一种类别。而每一个PhysicsBody可以属于多个类别。其默认值为0xFFFFFFFF，同时属于32个类别。</p>
-<p>  例如bitmask为0x03,即0011（此处只保留了最后四位），则表示该PhysicsBody属于最后两位代表的类别，同时属于0001和0010类。</p>
-</li>
-<li><h4 id="void_setCollisionBitmask_28int_bitmask_29"><a href="#void_setCollisionBitmask_28int_bitmask_29" class="headerlink" title="void setCollisionBitmask(int bitmask)"></a>void setCollisionBitmask(int bitmask)</h4><p>  设置此PhysicsBody能与哪些类别的PhysicsBody产生碰撞，例如设置为0x03（即0011），则能与0001和0010两类的物体产生碰撞。</p>
-<p>  默认值0xFFFFFFFF，即能与所有类别的PhysicsBody产生碰撞。</p>
-</li>
-<li><h4 id="void_setContactTestBitmask_28int_bitmask_29"><a href="#void_setContactTestBitmask_28int_bitmask_29" class="headerlink" title="void setContactTestBitmask(int bitmask)"></a>void setContactTestBitmask(int bitmask)</h4><p>  使用类似于CollisionBitmask的使用，用来触发cocos2d中EventListenerPhysicsContact的回调函数，不设置的话就不会响应EventListenerPhysicsContact的事件。</p>
-<p>  默认值0x00000000，即都不响应事件。但是只是不响应事件，如果setCollisionBitMask中使得此PhysicsBody能响应碰撞，则在物理引擎的表现中此PhysicsBody依然能够响应碰撞。</p>
+<li><h4 id="u5728cocos2d_u4E2D_u521B_u5EFA_u5E76_u52A0_u8F7Dtilemap"><a href="#u5728cocos2d_u4E2D_u521B_u5EFA_u5E76_u52A0_u8F7Dtilemap" class="headerlink" title="在cocos2d中创建并加载tilemap"></a>在cocos2d中创建并加载tilemap</h4></li>
+</ul>
+<p>使用Tiled创建好tilemap后，接下来需要用代码在cocos2d中加载它，代码如下：   </p>
+<pre><code class="c++">TMXTiledMap* tilemap = TMXTiledMap::create(<span class="string">"Map/tilemap.tmx"</span>);
+<span class="keyword">this</span>-&gt;addChild(tilemap);
+</code></pre>
+<p>这样便很简单地创建了tilemap。<br>不过这里有几点要注意一下，一是使用Tiled创建tilemap的时候，添加了tileset之类资源的话，一定要把资源放到与tmx文件同一个目录下，避免无法加载的情况出现；二是新建tilemap时，格式应选择Base64(zlib compressed)，不然cocos2d可能会出现加载失败的情况。</p>
+<ul>
+<li><h4 id="tmx_u6587_u4EF6_u7684_u7ED3_u6784"><a href="#tmx_u6587_u4EF6_u7684_u7ED3_u6784" class="headerlink" title="tmx文件的结构"></a>tmx文件的结构</h4></li>
+</ul>
+<p>cocos2d可以通过tmx文件加载tilemap，而tmx文件其实就是xml格式的文件，其具体格式在<a href="http://doc.mapeditor.org/reference/tmx-map-format/" target="_blank" rel="external">这里</a>可以看到。<br>例如如下tmx文件内容：  </p>
+<pre><code class="xml"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="tag">&lt;<span class="name">map</span> <span class="attr">version</span>=<span class="string">"1.0"</span> <span class="attr">orientation</span>=<span class="string">"orthogonal"</span> <span class="attr">renderorder</span>=<span class="string">"right-down"</span> <span class="attr">width</span>=<span class="string">"60"</span> <span class="attr">height</span>=<span class="string">"40"</span> <span class="attr">tilewidth</span>=<span class="string">"32"</span> <span class="attr">tileheight</span>=<span class="string">"32"</span> <span class="attr">nextobjectid</span>=<span class="string">"13"</span>&gt;</span>
+ <span class="tag">&lt;<span class="name">tileset</span> <span class="attr">firstgid</span>=<span class="string">"1"</span> <span class="attr">name</span>=<span class="string">"tiles-hd"</span> <span class="attr">tilewidth</span>=<span class="string">"32"</span> <span class="attr">tileheight</span>=<span class="string">"32"</span> <span class="attr">tilecount</span>=<span class="string">"256"</span> <span class="attr">columns</span>=<span class="string">"16"</span>&gt;</span>
+  <span class="tag">&lt;<span class="name">image</span> <span class="attr">source</span>=<span class="string">"tiles-hd.png"</span> <span class="attr">width</span>=<span class="string">"512"</span> <span class="attr">height</span>=<span class="string">"512"</span>/&gt;</span>
+ <span class="tag">&lt;/<span class="name">tileset</span>&gt;</span>
+ <span class="tag">&lt;<span class="name">layer</span> <span class="attr">name</span>=<span class="string">"Tile Layer 1"</span> <span class="attr">width</span>=<span class="string">"60"</span> <span class="attr">height</span>=<span class="string">"40"</span>&gt;</span>
+  <span class="tag">&lt;<span class="name">data</span> <span class="attr">encoding</span>=<span class="string">"base64"</span> <span class="attr">compression</span>=<span class="string">"zlib"</span>&gt;</span>
+   eJzt0YEJAEAMg8DS/YfuFv+g3gSR7IRsfw94zNZrY/u33pDY/q2XzdZrY/u3XrZ6Q2L7t142W6+N7d96Q2L719Zr079stn/rZauXzdZ7shwAPw==
+  <span class="tag">&lt;/<span class="name">data</span>&gt;</span>
+ <span class="tag">&lt;/<span class="name">layer</span>&gt;</span>
+ <span class="tag">&lt;<span class="name">objectgroup</span> <span class="attr">name</span>=<span class="string">"Objects"</span>&gt;</span>
+  <span class="tag">&lt;<span class="name">object</span> <span class="attr">id</span>=<span class="string">"1"</span> <span class="attr">type</span>=<span class="string">"1"</span> <span class="attr">x</span>=<span class="string">"53.6875"</span> <span class="attr">y</span>=<span class="string">"1200.9"</span>&gt;</span>
+   <span class="tag">&lt;<span class="name">polyline</span> <span class="attr">points</span>=<span class="string">"0,0 1426.96,-8.47697 1850.81,8.47697"</span>/&gt;</span>
+  <span class="tag">&lt;/<span class="name">object</span>&gt;</span>
+  <span class="tag">&lt;<span class="name">object</span> <span class="attr">id</span>=<span class="string">"6"</span> <span class="attr">type</span>=<span class="string">"2"</span> <span class="attr">x</span>=<span class="string">"771.404"</span> <span class="attr">y</span>=<span class="string">"180.842"</span>&gt;</span>
+   <span class="tag">&lt;<span class="name">polygon</span> <span class="attr">points</span>=<span class="string">"0,0 127.155,418.197 508.618,573.608 599.039,319.299 401.243,73.4671"</span>/&gt;</span>
+  <span class="tag">&lt;/<span class="name">object</span>&gt;</span>
+  <span class="tag">&lt;<span class="name">object</span> <span class="attr">id</span>=<span class="string">"7"</span> <span class="attr">type</span>=<span class="string">"4"</span> <span class="attr">x</span>=<span class="string">"262.786"</span> <span class="attr">y</span>=<span class="string">"576.434"</span> <span class="attr">width</span>=<span class="string">"192.145"</span> <span class="attr">height</span>=<span class="string">"200.622"</span>/&gt;</span>
+  <span class="tag">&lt;<span class="name">object</span> <span class="attr">id</span>=<span class="string">"9"</span> <span class="attr">type</span>=<span class="string">"3"</span> <span class="attr">x</span>=<span class="string">"1491.95"</span> <span class="attr">y</span>=<span class="string">"243.006"</span> <span class="attr">width</span>=<span class="string">"121.503"</span> <span class="attr">height</span>=<span class="string">"161.062"</span>&gt;</span>
+   <span class="tag">&lt;<span class="name">ellipse</span>/&gt;</span>
+  <span class="tag">&lt;/<span class="name">object</span>&gt;</span>
+ <span class="tag">&lt;/<span class="name">objectgroup</span>&gt;</span>
+<span class="tag">&lt;/<span class="name">map</span>&gt;</span>
+</code></pre>
+<p><strong> map </strong>标签：储存了此tilemap的主要信息，例如朝向，宽高等等。<br><strong> tileset </strong>标签：是此tilemap中导入的tileset资源的信息，例如图片源<br><strong> layer </strong>标签：层相关的信息，如果地图中有多个层，则也会有多个layer标签<br><strong> data </strong>标签：出现在layer里，其实定义的就是地图信息，如果加密方式选择csv，就可以看到其中的内容例如：  </p>
+<pre><code class="xml">  <span class="tag">&lt;<span class="name">data</span> <span class="attr">encoding</span>=<span class="string">"csv"</span>&gt;</span>
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0
+<span class="tag">&lt;/<span class="name">data</span>&gt;</span>
+</code></pre>
+<p>这是一个10行10列的地图，0代表没有图块，如果有数字，例如1,就代表tileset中第一个图块，2就代表第二个，以此类推。</p>
+<p><strong> objectgroup </strong>这个是object层的信息，其中会包括多个<strong> object </strong>标签，记录了每个object的信息，obejct有多种类型：    </p>
+<ul>
+<li>四边形：四边形没有特殊标签，直接用object标签即可表示：<pre><code class="xml"><span class="tag">&lt;<span class="name">object</span> <span class="attr">id</span>=<span class="string">"7"</span> <span class="attr">type</span>=<span class="string">"4"</span> <span class="attr">x</span>=<span class="string">"262.786"</span> <span class="attr">y</span>=<span class="string">"576.434"</span> <span class="attr">width</span>=<span class="string">"192.145"</span> <span class="attr">height</span>=<span class="string">"200.622"</span>/&gt;</span>
+</code></pre>
+其中x、y为四边形左下角点的坐标，width、height即为宽、长。  </li>
+</ul>
+<ul>
+<li>椭圆  使用<strong> ellipse </strong>标签。<pre><code class="xml"><span class="tag">&lt;<span class="name">object</span> <span class="attr">id</span>=<span class="string">"9"</span> <span class="attr">type</span>=<span class="string">"3"</span> <span class="attr">x</span>=<span class="string">"1491.95"</span> <span class="attr">y</span>=<span class="string">"243.006"</span> <span class="attr">width</span>=<span class="string">"121.503"</span> <span class="attr">height</span>=<span class="string">"161.062"</span>&gt;</span>
+ <span class="tag">&lt;<span class="name">ellipse</span>/&gt;</span>
+<span class="tag">&lt;/<span class="name">object</span>&gt;</span>
+</code></pre>
 </li>
 </ul>
+<ul>
+<li>多边形  使用<strong> polygon </strong>标签，object中的x、y为多边形的起始点，polygon中的points记录了多边形各个顶点的坐标，其中第一个始终为(0,0)，其余点都是相对第一个点的位移。<pre><code class="xml"><span class="tag">&lt;<span class="name">object</span> <span class="attr">id</span>=<span class="string">"6"</span> <span class="attr">type</span>=<span class="string">"2"</span> <span class="attr">x</span>=<span class="string">"771.404"</span> <span class="attr">y</span>=<span class="string">"180.842"</span>&gt;</span>
+ <span class="tag">&lt;<span class="name">polygon</span> <span class="attr">points</span>=<span class="string">"0,0 127.155,418.197 508.618,573.608 599.039,319.299 401.243,73.4671"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="name">object</span>&gt;</span>
+</code></pre>
+</li>
+</ul>
+<ul>
+<li>折线  使用<strong> polyline </strong>标签，表示方式类似于polygon，其实折线可以看做不封口的多边形。<pre><code class="xml"><span class="tag">&lt;<span class="name">object</span> <span class="attr">id</span>=<span class="string">"1"</span> <span class="attr">type</span>=<span class="string">"1"</span> <span class="attr">x</span>=<span class="string">"53.6875"</span> <span class="attr">y</span>=<span class="string">"1200.9"</span>&gt;</span>
+ <span class="tag">&lt;<span class="name">polyline</span> <span class="attr">points</span>=<span class="string">"0,0 1426.96,-8.47697 1850.81,8.47697"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="name">object</span>&gt;</span>
+</code></pre>
+</li>
+</ul>
+<ul>
+<li><h4 id="u5728cocos2d_u4E2D_u89E3_u6790tilemap_u7684_u6570_u636E"><a href="#u5728cocos2d_u4E2D_u89E3_u6790tilemap_u7684_u6570_u636E" class="headerlink" title="在cocos2d中解析tilemap的数据"></a>在cocos2d中解析tilemap的数据</h4></li>
+</ul>
+<p>虽然在cocos2d中加载tilemap非常简单，但是实际使用中经常不仅仅要加载tilemap，实际上还需要通过tilemap传入地图的一些信息，例如使用物理引擎时，需要获知地图中有哪些碰撞物；怪物会在哪里生成；在哪些地方会触发事件等等。信息足够的话，其实可以将Tiled当作关卡编辑器使用，减轻编码负担。</p>
+<p>tilemap中常用的层有地图层和object层，下面简单介绍一下两者信息的获取方法：</p>
+<ul>
+<li>地图层   </li>
+</ul>
+<p>使用TMXTiledMap类的getLayer方法可以获取到地图层，如果获取成功，会返回一个TMXLayer对象，通过TMXLayer对象可以获取地图层的信息，具体提供的方法可以访问官网查看api：<a href="http://cocos2d-x.org/docs/api-ref/cplusplus/v3x/de/d34/classcocos2d_1_1_t_m_x_layer.html" target="_blank" rel="external">TMXLayer</a>。   </p>
+<pre><code class="c++">TMXLayer* layer = tilemap-&gt;getLayer(<span class="string">"Layer"</span>);
+<span class="built_in">log</span>(<span class="string">"%s"</span>, layer-&gt;getDescription().c_str());
+Sprite* sp = layer-&gt;getTileAt(Vec2(<span class="number">0</span>, <span class="number">15</span>));
+sp-&gt;setPosition(visibleSize/<span class="number">2</span>);
+</code></pre>
+<p>注意一下，以上代码中getTileAt获取到的是已经作为layer的字节点的sprite对象，改变其位置后，原来地图上对应的图块就改变了位置。</p>
+<ul>
+<li>object层<br>通过TMXTiledMap的getObjectGroup方法可以获取到object层对象，该方法返回的是一个TMXObjectGroup对象，其api查看<a href="http://cocos2d-x.org/docs/api-ref/cplusplus/v3x/d4/dfa/classcocos2d_1_1_t_m_x_object_group.html" target="_blank" rel="external">TMXObjectGroup</a>，示例代码如下：   <pre><code class="c++">tilemap = TMXTiledMap::create(<span class="string">"Map/tilemap.tmx"</span>);
+<span class="keyword">this</span>-&gt;addChild(tilemap);
+TMXObjectGroup *objectGroup = tilemap-&gt;getObjectGroup(<span class="string">"Objects"</span>);
+<span class="keyword">for</span> (<span class="keyword">auto</span>&amp; object : objectGroup-&gt;getObjects()) {
+    ValueMap obj = object.asValueMap();
+    <span class="keyword">switch</span> (obj[<span class="string">"type"</span>].asInt()) {
+        <span class="keyword">case</span> <span class="number">1</span>: { <span class="comment">// polyline</span>
+            <span class="built_in">log</span>(<span class="string">"Polyline--------"</span>);
+            <span class="built_in">log</span>(<span class="string">"x:%.2f, y:%.2f"</span>, obj[<span class="string">"x"</span>].asFloat(), obj[<span class="string">"y"</span>].asFloat());
+            ValueVector pointsVector = obj[<span class="string">"polylinePoints"</span>].asValueVector();
+            <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; pointMap : pointsVector) {
+                <span class="keyword">auto</span> point = pointMap.asValueMap();
+                <span class="built_in">log</span>(<span class="string">"polyline point: %.2f, %.2f"</span>, point[<span class="string">"x"</span>].asFloat(), point[<span class="string">"y"</span>].asFloat());
+            }
+            <span class="keyword">break</span>;
+        }
+        <span class="keyword">case</span> <span class="number">2</span>: { <span class="comment">// polygon</span>
+            <span class="built_in">log</span>(<span class="string">"Polygon---------"</span>);
+            <span class="built_in">log</span>(<span class="string">"x:%.2f, y:%.2f"</span>, obj[<span class="string">"x"</span>].asFloat(), obj[<span class="string">"y"</span>].asFloat());
+            ValueVector pointsVector = obj[<span class="string">"points"</span>].asValueVector();
+            <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; pointMap : pointsVector) {
+                <span class="keyword">auto</span> point = pointMap.asValueMap();
+                <span class="built_in">log</span>(<span class="string">"polygon point: %.2f, %.2f"</span>, point[<span class="string">"x"</span>].asFloat(), point[<span class="string">"y"</span>].asFloat());
+            }
+            <span class="keyword">break</span>;
+        }
+        <span class="keyword">case</span> <span class="number">3</span>: { <span class="comment">// ellipse</span>
+            <span class="built_in">log</span>(<span class="string">"Ellipse---------"</span>);
+            <span class="built_in">log</span>(<span class="string">"x:%.2f, y:%.2f"</span>, obj[<span class="string">"x"</span>].asFloat(), obj[<span class="string">"y"</span>].asFloat());
+            <span class="built_in">log</span>(<span class="string">"width:%.2f, height:%.2f"</span>, obj[<span class="string">"width"</span>].asFloat(), obj[<span class="string">"height"</span>].asFloat());
+            <span class="keyword">break</span>;
+        }
+        <span class="keyword">case</span> <span class="number">4</span>: { <span class="comment">// rectangle</span>
+            <span class="built_in">log</span>(<span class="string">"Rectangle-------"</span>);
+            <span class="built_in">log</span>(<span class="string">"x:%.2f, y:%.2f"</span>, obj[<span class="string">"x"</span>].asFloat(), obj[<span class="string">"y"</span>].asFloat());
+            <span class="built_in">log</span>(<span class="string">"width:%.2f, height:%.2f"</span>, obj[<span class="string">"width"</span>].asFloat(), obj[<span class="string">"height"</span>].asFloat());
+            <span class="keyword">break</span>;
+        }
+        <span class="keyword">default</span>: {
+            CCASSERT(<span class="literal">false</span>, <span class="string">"object must has a type!!!"</span>);
+            <span class="keyword">break</span>;
+        }
+    }
+    <span class="built_in">log</span>(<span class="string">""</span>);
+}
+</code></pre>
+</li>
+</ul>
+<p>为了做示范，在创建tilemap时，添加了四种object，都放置在名为Objects的层中，且四种object都添加了type属性以示区别，其中折线为1,多边形为2,椭圆为3,四边形为4。<br>这里可能要注意一下Value的用法，这是cocos2d中存储数据的类，与其相关的还有ValueVector、ValueMap等等，具体使用方法以后再介绍。<br>以上代码中，TMXObjectGroup即tilemap的object层，通过其getObjects方法可以获取其中存储的所有object；之后遍历所有object，判断其type，做相关处理即可。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/03/04/cocos2d-physics/" data-id="ciqdt1gsw000d1vcps8s8kv0o" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/03/26/cocos2d-tilemap01/" data-id="ciy3045bn000b3gcpi623ipk8" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/chipmunk/">chipmunk</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cocos2d/">cocos2d</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/物理引擎/">物理引擎</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cocos2d/">cocos2d</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tilemap/">tilemap</a></li></ul>
 
     </footer>
   </div>
@@ -119,7 +248,7 @@
   
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/4/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/6/">Next &raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/4/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/6/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -132,7 +261,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/chipmunk/">chipmunk</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cocos2d/">cocos2d</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tilemap/">tilemap</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/物理引擎/">物理引擎</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/chipmunk/">chipmunk</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cocos2d/">cocos2d</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gamedesign/">gamedesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tilemap/">tilemap</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/物理引擎/">物理引擎</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -141,7 +270,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/chipmunk/" style="font-size: 10px;">chipmunk</a> <a href="/tags/cocos2d/" style="font-size: 20px;">cocos2d</a> <a href="/tags/tilemap/" style="font-size: 15px;">tilemap</a> <a href="/tags/物理引擎/" style="font-size: 10px;">物理引擎</a>
+      <a href="/tags/chipmunk/" style="font-size: 10px;">chipmunk</a> <a href="/tags/cocos2d/" style="font-size: 20px;">cocos2d</a> <a href="/tags/gamedesign/" style="font-size: 10px;">gamedesign</a> <a href="/tags/tilemap/" style="font-size: 15px;">tilemap</a> <a href="/tags/物理引擎/" style="font-size: 10px;">物理引擎</a>
     </div>
   </div>
 
@@ -150,7 +279,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">1</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">January 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -160,6 +289,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2017/01/18/gamedesign-psychology/">&quot;游戏心理学&quot;相关笔记</a>
+          </li>
         
           <li>
             <a href="/2016/07/08/cocos2d-lua-binding/">Cocos2d-lua绑定自定义c++类</a>
@@ -177,10 +310,6 @@
             <a href="/2016/03/26/cocos2d-tilemap01/">Cocos2dx:TileMap的使用（一）</a>
           </li>
         
-          <li>
-            <a href="/2016/03/04/cocos2d-physics/">Cocos2dx:物理引擎碰撞检测</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -193,7 +322,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2016 KJTang<br>
+      &copy; 2017 KJTang<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
