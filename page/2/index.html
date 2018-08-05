@@ -31,7 +31,8 @@
 
   
 
-</head>
+<link rel="stylesheet" href="/css/prism-atom-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
 
 <body>
   <div id="container" q-class="show:isCtnShow">
@@ -141,6 +142,73 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-cocos2d-lua-binding" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/07/08/cocos2d-lua-binding/">Cocos2d-lua绑定自定义c++类</a>
+    </h1>
+  
+
+        
+        <a href="/2016/07/08/cocos2d-lua-binding/" class="archive-article-date">
+  	<time datetime="2016-07-08T11:41:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-07-08</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近在使用cocos2d-lua写一些小游戏，遇到了需要在lua中调用自定义的c++类的情况，于是花了一下午时间来踩这个坑，目前终于成功跑起来了，故在此做一个记录。</p>
+<ul>
+<li><h4 id="lua调用静态c-函数"><a href="#lua调用静态c-函数" class="headerlink" title="lua调用静态c++函数"></a>lua调用静态c++函数</h4>在lua中调用c++有很多中办法，例如可以直接使用lua_register来注册一个静态函数。如下：  </li>
+</ul>
+        
+          <a class="article-more-a" href="/2016/07/08/cocos2d-lua-binding/#more">more >></a>
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">cocos2d</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2016/07/08/cocos2d-lua-binding/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+
+
+
+
+
+
+
+  
     <article id="post-cocos2d-render" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -232,8 +300,8 @@
       
         <p>上一篇主要介绍了在cocos2d中tilemap的加载使用方法，这一篇就简要查看一下cocos2d这部分的源码，看看cocos2d是如何解析tilemap中的数据的。</p>
 <p>创建tilemap的代码如下：</p>
-<pre><code class="c++">TMXTiledMap* tilemap = TMXTiledMap::create(<span class="string">"Map/tilemap.tmx"</span>);
-<span class="keyword">this</span>-&gt;addChild(tilemap);
+<pre><code class="cpp">    TMXTiledMap* tilemap = TMXTiledMap::create(&quot;Map/tilemap.tmx&quot;);
+    this-&gt;addChild(tilemap);
 </code></pre>
         
           <a class="article-more-a" href="/2016/03/27/cocos2d-tilemap02/#more">more >></a>
@@ -265,74 +333,6 @@
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2016/03/27/cocos2d-tilemap02/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-
-
-
-
-
-
-
-  
-    <article id="post-cocos2d-tilemap01" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/26/cocos2d-tilemap01/">Cocos2dx:TileMap的使用（一）</a>
-    </h1>
-  
-
-        
-        <a href="/2016/03/26/cocos2d-tilemap01/" class="archive-article-date">
-  	<time datetime="2016-03-26T12:47:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-03-26</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>针对如何在cocos2d中使用tilemap来加载地图的步骤网上基本都有教程，比如怎么使用Tiled创建tilemap，以及如何在cocos2d中加载，网上都能搜索到，这里只简单说一下，不列出具体步骤。<br>这篇文章主要是对tilemap文件的格式以及cocos2d如何加载tilemap做了一个简单的分析，以备日后查看。</p>
-        
-          <a class="article-more-a" href="/2016/03/26/cocos2d-tilemap01/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">cocos2d</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">tilemap</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2016/03/26/cocos2d-tilemap01/">展开全文 >></a>
         </p>
       
 
@@ -451,15 +451,15 @@
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">unity</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">ui</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
               </li>
             
             <div class="clearfix"></div>

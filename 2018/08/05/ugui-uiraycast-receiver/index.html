@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="KJTang's Blog">
 <meta property="og:description" content="功能概述某些时候，我们想要实现这样一种功能：点击屏幕上的一块区域，该区域触发一个事件，同时位于该区域以下的UI组件依然能够接收的到点击事件。比如在游戏的背包系统中，点击某个道具会显示道具的信息 Tips ，在 Tips 存在的时候，点击第二个道具，打开第二个道具的 Tips ，同时关闭第一个道具的 Tips 。">
 <meta property="og:image" content="http://yoursite.com/images/ugui/backpack.png">
-<meta property="og:updated_time" content="2018-08-05T05:27:25.853Z">
+<meta property="og:updated_time" content="2018-08-05T05:44:34.550Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="UI点击穿透组件">
 <meta name="twitter:description" content="功能概述某些时候，我们想要实现这样一种功能：点击屏幕上的一块区域，该区域触发一个事件，同时位于该区域以下的UI组件依然能够接收的到点击事件。比如在游戏的背包系统中，点击某个道具会显示道具的信息 Tips ，在 Tips 存在的时候，点击第二个道具，打开第二个道具的 Tips ，同时关闭第一个道具的 Tips 。">
@@ -37,7 +37,8 @@
 
   
 
-</head>
+<link rel="stylesheet" href="/css/prism-atom-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
 
 <body>
   <div id="container" q-class="show:isCtnShow">
@@ -175,10 +176,85 @@
 <li>然后在每个道具的事件处理中都先关闭上一条 Tips ，再打开自己的 Tips   </li>
 </ol>
 <p>但此时出现了新的问题，比如背包系统中经常会有多种类型的背包，通过 Tab 来切换不同的类型，如果 Tips 无法接收事件，那意味着在这些 Tab 的事件处理中也要加上关闭 Tips 的处理，否则在切换类型时 Tips 无法关闭。<br>在这样的处理下，原本的逻辑就变得复杂了，如果还有其它组件有 Tab 类似的功能，意味着每一个这样的组件都要加相关的处理，缺少通用性。  </p>
-<h4 id="使用-EventHandler"><a href="#使用-EventHandler" class="headerlink" title="使用 EventHandler"></a>使用 EventHandler</h4><p>参考博客 <a href="http://www.manew.com/thread-94130-1-1.html" target="_blank" rel="external">《 Unity3D 之将 UI 的点击事件渗透下去》</a> 的内容，通过继承 EventHandler 的方法，让当前脚本接收到事件的同时将事件再次传递下去：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line">using UnityEngine;</div><div class="line">using System.Collections;</div><div class="line">using UnityEngine.EventSystems;</div><div class="line">using UnityEngine.UI;</div><div class="line">using System.Collections.Generic;</div><div class="line"></div><div class="line">public class Test : MonoBehaviour, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler</div><div class="line">&#123; </div><div class="line">    // 监听按下</div><div class="line">    public void OnPointerDown(PointerEventData eventData)</div><div class="line">    &#123;</div><div class="line">        PassEvent(eventData, ExecuteEvents.pointerDownHandler);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // 监听抬起</div><div class="line">    public void OnPointerUp(PointerEventData eventData)</div><div class="line">    &#123;</div><div class="line">        PassEvent(eventData, ExecuteEvents.pointerUpHandler);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // 监听点击</div><div class="line">    public void OnPointerClick(PointerEventData eventData)</div><div class="line">    &#123;</div><div class="line">        PassEvent(eventData, ExecuteEvents.submitHandler);</div><div class="line">        PassEvent(eventData, ExecuteEvents.pointerClickHandler);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // 把事件透下去</div><div class="line">    public void  PassEvent&lt;T&gt;(PointerEventData data, ExecuteEvents.EventFunction&lt;T&gt; function)</div><div class="line">        where T : IEventSystemHandler</div><div class="line">    &#123;</div><div class="line">        List&lt;RaycastResult&gt; results = new List&lt;RaycastResult&gt;();</div><div class="line">        EventSystem.current.RaycastAll(data, results); </div><div class="line">        GameObject current = data.pointerCurrentRaycast.gameObject ;</div><div class="line">        for(int i = 0; i &lt; results.Count; ++i)</div><div class="line">        &#123;</div><div class="line">            if(current != results[i].gameObject)</div><div class="line">            &#123;</div><div class="line">                ExecuteEvents.Execute(results[i].gameObject, data,function);</div><div class="line">                // RaycastAll后ugui会自己排序，如果你只想响应透下去的最近的一个响应，</div><div class="line">                // 这里ExecuteEvents.Execute后直接break就行。</div><div class="line">                // break;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125; </div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="使用-EventHandler"><a href="#使用-EventHandler" class="headerlink" title="使用 EventHandler"></a>使用 EventHandler</h4><p>参考博客 <a href="http://www.manew.com/thread-94130-1-1.html" target="_blank" rel="external">《 Unity3D 之将 UI 的点击事件渗透下去》</a> 的内容，通过继承 EventHandler 的方法，让当前脚本接收到事件的同时将事件再次传递下去：</p>
+<pre class="line-numbers language-csharp"><code class="language-csharp"><span class="token keyword">using</span> UnityEngine<span class="token punctuation">;</span>
+<span class="token keyword">using</span> System<span class="token punctuation">.</span>Collections<span class="token punctuation">;</span>
+<span class="token keyword">using</span> UnityEngine<span class="token punctuation">.</span>EventSystems<span class="token punctuation">;</span>
+<span class="token keyword">using</span> UnityEngine<span class="token punctuation">.</span>UI<span class="token punctuation">;</span>
+<span class="token keyword">using</span> System<span class="token punctuation">.</span>Collections<span class="token punctuation">.</span>Generic<span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Test</span> <span class="token punctuation">:</span> MonoBehaviour<span class="token punctuation">,</span> IPointerClickHandler<span class="token punctuation">,</span> IPointerDownHandler<span class="token punctuation">,</span> IPointerUpHandler
+<span class="token punctuation">{</span> 
+    <span class="token comment" spellcheck="true">// 监听按下</span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">OnPointerDown</span><span class="token punctuation">(</span>PointerEventData eventData<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token function">PassEvent</span><span class="token punctuation">(</span>eventData<span class="token punctuation">,</span> ExecuteEvents<span class="token punctuation">.</span>pointerDownHandler<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment" spellcheck="true">// 监听抬起</span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">OnPointerUp</span><span class="token punctuation">(</span>PointerEventData eventData<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token function">PassEvent</span><span class="token punctuation">(</span>eventData<span class="token punctuation">,</span> ExecuteEvents<span class="token punctuation">.</span>pointerUpHandler<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment" spellcheck="true">// 监听点击</span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">OnPointerClick</span><span class="token punctuation">(</span>PointerEventData eventData<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token function">PassEvent</span><span class="token punctuation">(</span>eventData<span class="token punctuation">,</span> ExecuteEvents<span class="token punctuation">.</span>submitHandler<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">PassEvent</span><span class="token punctuation">(</span>eventData<span class="token punctuation">,</span> ExecuteEvents<span class="token punctuation">.</span>pointerClickHandler<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment" spellcheck="true">// 把事件透下去</span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span>  <span class="token generic-method function">PassEvent<span class="token punctuation">&lt;</span>T<span class="token punctuation">></span></span><span class="token punctuation">(</span>PointerEventData data<span class="token punctuation">,</span> ExecuteEvents<span class="token punctuation">.</span>EventFunction<span class="token operator">&lt;</span>T<span class="token operator">></span> function<span class="token punctuation">)</span>
+        <span class="token keyword">where</span> T <span class="token punctuation">:</span> IEventSystemHandler
+    <span class="token punctuation">{</span>
+        List<span class="token operator">&lt;</span>RaycastResult<span class="token operator">></span> results <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">List</span><span class="token operator">&lt;</span>RaycastResult<span class="token operator">></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        EventSystem<span class="token punctuation">.</span>current<span class="token punctuation">.</span><span class="token function">RaycastAll</span><span class="token punctuation">(</span>data<span class="token punctuation">,</span> results<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        GameObject current <span class="token operator">=</span> data<span class="token punctuation">.</span>pointerCurrentRaycast<span class="token punctuation">.</span>gameObject <span class="token punctuation">;</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> results<span class="token punctuation">.</span>Count<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>current <span class="token operator">!=</span> results<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>gameObject<span class="token punctuation">)</span>
+            <span class="token punctuation">{</span>
+                ExecuteEvents<span class="token punctuation">.</span><span class="token function">Execute</span><span class="token punctuation">(</span>results<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>gameObject<span class="token punctuation">,</span> data<span class="token punctuation">,</span>function<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment" spellcheck="true">// RaycastAll后ugui会自己排序，如果你只想响应透下去的最近的一个响应，</span>
+                <span class="token comment" spellcheck="true">// 这里ExecuteEvents.Execute后直接break就行。</span>
+                <span class="token comment" spellcheck="true">// break;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span> 
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>但这样存在的问题是，如果被遮挡的组件除去点击事件还有其它类型的事件要接收（例如拖拽等），意味着要再给其它类型的事件做处理，并且很多事件不仅仅是直接将事件继续传递就可以了的，其中的逻辑没有处理好的话非常容易出现问题，故这套方案的局限性比较大。</p>
 <h4 id="利用-EventSystem-RaycastAll"><a href="#利用-EventSystem-RaycastAll" class="headerlink" title="利用 EventSystem.RaycastAll"></a>利用 EventSystem.RaycastAll</h4><p>通过分析 UGUI 的源码（ UGUI 为开源代码：<a href="https://bitbucket.org/Unity-Technologies/ui" target="_blank" rel="external">UGUI Source Code</a>），可以知道点击事件是由 EventSystem 来驱动的。  </p>
-<p>在 EventSystem 的 Update 中，对当前的 InputMoudle 进行了更新，默认的InputMoudle（ PC 上为 StandaloneInputMoudle ，移动端为 TouchInputMoudle ，都继承自 PointerInputModule ）在每次更新的时候，会利用 EventSystem.RaycastAll 接口来获取当前点击点能够触发事件的所有 UI 组件，并从中找出排在最前面的一个：<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// PointerInputModule.cs</span></div><div class="line"><span class="function"><span class="keyword">protected</span> PointerEventData <span class="title">GetTouchPointerEventData</span>(<span class="params">Touch input, <span class="keyword">out</span> <span class="keyword">bool</span> pressed, <span class="keyword">out</span> <span class="keyword">bool</span> released</span>)</span></div><div class="line">&#123;</div><div class="line">    <span class="comment">// 初始化 PointerData </span></div><div class="line">    PointerEventData pointerData;</div><div class="line">    <span class="keyword">var</span> created = GetPointerData(input.fingerId, <span class="keyword">out</span> pointerData, <span class="literal">true</span>);</div><div class="line">    pointerData.Reset();</div><div class="line">    pressed = created || (input.phase == TouchPhase.Began);</div><div class="line">    released = (input.phase == TouchPhase.Canceled) || (input.phase == TouchPhase.Ended);</div><div class="line">    <span class="keyword">if</span> (created)</div><div class="line">        pointerData.position = input.position;</div><div class="line">    <span class="keyword">if</span> (pressed)</div><div class="line">        pointerData.delta = Vector2.zero;</div><div class="line">    <span class="keyword">else</span></div><div class="line">        pointerData.delta = input.position - pointerData.position;</div><div class="line">    pointerData.position = input.position;</div><div class="line">    pointerData.button = PointerEventData.InputButton.Left;</div><div class="line"></div><div class="line">    <span class="comment">// 获取所有能接收该 Point 事件的 UI 组件</span></div><div class="line">    eventSystem.RaycastAll(pointerData, m_RaycastResultCache);</div><div class="line"></div><div class="line">    <span class="comment">// 找出排在最前面的 UI 组件</span></div><div class="line">    <span class="keyword">var</span> raycast = FindFirstRaycast(m_RaycastResultCache);</div><div class="line">    pointerData.pointerCurrentRaycast = raycast;</div><div class="line">    m_RaycastResultCache.Clear();</div><div class="line">    <span class="keyword">return</span> pointerData;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在 EventSystem 的 Update 中，对当前的 InputMoudle 进行了更新，默认的InputMoudle（ PC 上为 StandaloneInputMoudle ，移动端为 TouchInputMoudle ，都继承自 PointerInputModule ）在每次更新的时候，会利用 EventSystem.RaycastAll 接口来获取当前点击点能够触发事件的所有 UI 组件，并从中找出排在最前面的一个：</p>
+<pre class="line-numbers language-csharp"><code class="language-csharp"><span class="token comment" spellcheck="true">// PointerInputModule.cs</span>
+<span class="token keyword">protected</span> PointerEventData <span class="token function">GetTouchPointerEventData</span><span class="token punctuation">(</span>Touch input<span class="token punctuation">,</span> <span class="token keyword">out</span> <span class="token keyword">bool</span> pressed<span class="token punctuation">,</span> <span class="token keyword">out</span> <span class="token keyword">bool</span> released<span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+    <span class="token comment" spellcheck="true">// 初始化 PointerData </span>
+    PointerEventData pointerData<span class="token punctuation">;</span>
+    <span class="token keyword">var</span> created <span class="token operator">=</span> <span class="token function">GetPointerData</span><span class="token punctuation">(</span>input<span class="token punctuation">.</span>fingerId<span class="token punctuation">,</span> <span class="token keyword">out</span> pointerData<span class="token punctuation">,</span> <span class="token keyword">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    pointerData<span class="token punctuation">.</span><span class="token function">Reset</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    pressed <span class="token operator">=</span> created <span class="token operator">||</span> <span class="token punctuation">(</span>input<span class="token punctuation">.</span>phase <span class="token operator">==</span> TouchPhase<span class="token punctuation">.</span>Began<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    released <span class="token operator">=</span> <span class="token punctuation">(</span>input<span class="token punctuation">.</span>phase <span class="token operator">==</span> TouchPhase<span class="token punctuation">.</span>Canceled<span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token punctuation">(</span>input<span class="token punctuation">.</span>phase <span class="token operator">==</span> TouchPhase<span class="token punctuation">.</span>Ended<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>created<span class="token punctuation">)</span>
+        pointerData<span class="token punctuation">.</span>position <span class="token operator">=</span> input<span class="token punctuation">.</span>position<span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>pressed<span class="token punctuation">)</span>
+        pointerData<span class="token punctuation">.</span>delta <span class="token operator">=</span> Vector2<span class="token punctuation">.</span>zero<span class="token punctuation">;</span>
+    <span class="token keyword">else</span>
+        pointerData<span class="token punctuation">.</span>delta <span class="token operator">=</span> input<span class="token punctuation">.</span>position <span class="token operator">-</span> pointerData<span class="token punctuation">.</span>position<span class="token punctuation">;</span>
+    pointerData<span class="token punctuation">.</span>position <span class="token operator">=</span> input<span class="token punctuation">.</span>position<span class="token punctuation">;</span>
+    pointerData<span class="token punctuation">.</span>button <span class="token operator">=</span> PointerEventData<span class="token punctuation">.</span>InputButton<span class="token punctuation">.</span>Left<span class="token punctuation">;</span>
+
+    <span class="token comment" spellcheck="true">// 获取所有能接收该 Point 事件的 UI 组件</span>
+    eventSystem<span class="token punctuation">.</span><span class="token function">RaycastAll</span><span class="token punctuation">(</span>pointerData<span class="token punctuation">,</span> m_RaycastResultCache<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment" spellcheck="true">// 找出排在最前面的 UI 组件</span>
+    <span class="token keyword">var</span> raycast <span class="token operator">=</span> <span class="token function">FindFirstRaycast</span><span class="token punctuation">(</span>m_RaycastResultCache<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    pointerData<span class="token punctuation">.</span>pointerCurrentRaycast <span class="token operator">=</span> raycast<span class="token punctuation">;</span>
+    m_RaycastResultCache<span class="token punctuation">.</span><span class="token function">Clear</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> pointerData<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>获取到最前面的 UI 组件后，即可对它进行事件处理。  </p>
 <p>判断一个 UI 组件是否能够被触发事件，是由该组件的 Raycast 接口决定的：EventSystem.RaycastAll 时会对所有能够接收事件的 UI 组件调用其 Raycast 接口，如果该接口返回 True ，说明其处在点击范围内，会加入能够接收事件的 UI 队列中。<br>　<br>知道了这一点，面对我们需要解决的需求时，可以采取的思路是：  </p>
 <ol>
@@ -186,7 +262,64 @@
 <li>如果处在点击范围内，进行记录，但让 Raycast 接口返回 False ，避免隔断其它 UI 组件的事件处理</li>
 <li>如果记录中本 UI 组件处在点击范围内，则手动进行一次 EventSystem.RaycastAll 检测，并判断自身是否是队首的 UI 组件，如果是，则进行事件处理  </li>
 </ol>
-<p>通过上面第二点，可以做到事件穿透，通过第三点，可以做到当前 UI 组件的事件处理。实现了需求。核心代码如下：<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">bool</span> <span class="title">Raycast</span>(<span class="params">Vector2 sp, Camera eventCamera</span>) </span></div><div class="line">&#123;</div><div class="line">    <span class="comment">// 记录是否在点击范围内</span></div><div class="line">    isRaycasted = <span class="keyword">base</span>.Raycast(sp, eventCamera);</div><div class="line">    <span class="keyword">if</span> (isRaycastTesting) </div><div class="line">        <span class="keyword">return</span> isRaycasted;</div><div class="line">    <span class="keyword">else</span></div><div class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Update</span>(<span class="params"></span>) </span></div><div class="line">&#123;</div><div class="line">    <span class="comment">// 如果不需要检测，直接返回，避免不必要的计算</span></div><div class="line">    <span class="keyword">if</span> (!isRaycasted) </div><div class="line">        <span class="keyword">return</span>;</div><div class="line">    isRaycasted = <span class="literal">false</span>;</div><div class="line"></div><div class="line">    <span class="comment">// 获取当前点击点的位置</span></div><div class="line"><span class="meta">#<span class="meta-keyword">if</span> UNITY_EDITOR || UNITY_STANDALONE</span></div><div class="line">    <span class="keyword">if</span> (Input.GetMouseButtonDown(<span class="number">0</span>)) </div><div class="line">    &#123;</div><div class="line">        touchPosition = Input.mousePosition;</div><div class="line"><span class="meta">#<span class="meta-keyword">else</span></span></div><div class="line">    <span class="keyword">if</span> (Input.touchCount &gt; <span class="number">0</span> &amp;&amp; Input.touches[<span class="number">0</span>].phase == TouchPhase.Began)  </div><div class="line">    &#123;</div><div class="line">        touchPosition = Input.touches[<span class="number">0</span>].position;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"></div><div class="line">        <span class="comment">// 手动调用 EventSystem.RaycastAll </span></div><div class="line">        <span class="keyword">var</span> data = <span class="keyword">new</span> PointerEventData(EventSystem.current);</div><div class="line">        data.position = touchPosition;</div><div class="line">        data.delta = Vector2.zero;</div><div class="line">        data.button = PointerEventData.InputButton.Left;</div><div class="line">        <span class="keyword">var</span> results = <span class="keyword">new</span> List&lt;RaycastResult&gt;();</div><div class="line"></div><div class="line">        isRaycastTesting = <span class="literal">true</span>;</div><div class="line">        EventSystem.current.RaycastAll(data, results); </div><div class="line">        isRaycastTesting = <span class="literal">false</span>;</div><div class="line"></div><div class="line">        <span class="comment">// 判断是否是队首 UI </span></div><div class="line">        <span class="keyword">bool</span> isFirstObj = <span class="literal">false</span>;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; results.Count; ++i)</div><div class="line">        &#123;</div><div class="line">            <span class="keyword">if</span> (results[i].gameObject != <span class="literal">null</span>) </div><div class="line">            &#123;</div><div class="line">                isFirstObj = (results[i].gameObject == gameObject);</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 如果是，进行事件处理</span></div><div class="line">        <span class="keyword">if</span> (isFirstObj) </div><div class="line">        &#123;</div><div class="line">            <span class="comment">// do sth.</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>通过上面第二点，可以做到事件穿透，通过第三点，可以做到当前 UI 组件的事件处理。实现了需求。核心代码如下：  </p>
+<pre class="line-numbers language-csharp"><code class="language-csharp"><span class="token keyword">public</span> <span class="token keyword">override</span> <span class="token keyword">bool</span> <span class="token function">Raycast</span><span class="token punctuation">(</span>Vector2 sp<span class="token punctuation">,</span> Camera eventCamera<span class="token punctuation">)</span> 
+<span class="token punctuation">{</span>
+    <span class="token comment" spellcheck="true">// 记录是否在点击范围内</span>
+    isRaycasted <span class="token operator">=</span> <span class="token keyword">base</span><span class="token punctuation">.</span><span class="token function">Raycast</span><span class="token punctuation">(</span>sp<span class="token punctuation">,</span> eventCamera<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>isRaycastTesting<span class="token punctuation">)</span> 
+        <span class="token keyword">return</span> isRaycasted<span class="token punctuation">;</span>
+    <span class="token keyword">else</span>
+        <span class="token keyword">return</span> <span class="token keyword">false</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">Update</span><span class="token punctuation">(</span><span class="token punctuation">)</span> 
+<span class="token punctuation">{</span>
+    <span class="token comment" spellcheck="true">// 如果不需要检测，直接返回，避免不必要的计算</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>isRaycasted<span class="token punctuation">)</span> 
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    isRaycasted <span class="token operator">=</span> <span class="token keyword">false</span><span class="token punctuation">;</span>
+
+    <span class="token comment" spellcheck="true">// 获取当前点击点的位置</span>
+<span class="token preprocessor property">#<span class="token directive keyword">if</span> UNITY_EDITOR || UNITY_STANDALONE</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>Input<span class="token punctuation">.</span><span class="token function">GetMouseButtonDown</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> 
+    <span class="token punctuation">{</span>
+        touchPosition <span class="token operator">=</span> Input<span class="token punctuation">.</span>mousePosition<span class="token punctuation">;</span>
+<span class="token preprocessor property">#<span class="token directive keyword">else</span></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>Input<span class="token punctuation">.</span>touchCount <span class="token operator">></span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> Input<span class="token punctuation">.</span>touches<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>phase <span class="token operator">==</span> TouchPhase<span class="token punctuation">.</span>Began<span class="token punctuation">)</span>  
+    <span class="token punctuation">{</span>
+        touchPosition <span class="token operator">=</span> Input<span class="token punctuation">.</span>touches<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>position<span class="token punctuation">;</span>
+<span class="token preprocessor property">#<span class="token directive keyword">endif</span></span>
+
+        <span class="token comment" spellcheck="true">// 手动调用 EventSystem.RaycastAll </span>
+        <span class="token keyword">var</span> data <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">PointerEventData</span><span class="token punctuation">(</span>EventSystem<span class="token punctuation">.</span>current<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        data<span class="token punctuation">.</span>position <span class="token operator">=</span> touchPosition<span class="token punctuation">;</span>
+        data<span class="token punctuation">.</span>delta <span class="token operator">=</span> Vector2<span class="token punctuation">.</span>zero<span class="token punctuation">;</span>
+        data<span class="token punctuation">.</span>button <span class="token operator">=</span> PointerEventData<span class="token punctuation">.</span>InputButton<span class="token punctuation">.</span>Left<span class="token punctuation">;</span>
+        <span class="token keyword">var</span> results <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">List</span><span class="token operator">&lt;</span>RaycastResult<span class="token operator">></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        isRaycastTesting <span class="token operator">=</span> <span class="token keyword">true</span><span class="token punctuation">;</span>
+        EventSystem<span class="token punctuation">.</span>current<span class="token punctuation">.</span><span class="token function">RaycastAll</span><span class="token punctuation">(</span>data<span class="token punctuation">,</span> results<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        isRaycastTesting <span class="token operator">=</span> <span class="token keyword">false</span><span class="token punctuation">;</span>
+
+        <span class="token comment" spellcheck="true">// 判断是否是队首 UI </span>
+        <span class="token keyword">bool</span> isFirstObj <span class="token operator">=</span> <span class="token keyword">false</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> results<span class="token punctuation">.</span>Count<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>results<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>gameObject <span class="token operator">!=</span> <span class="token keyword">null</span><span class="token punctuation">)</span> 
+            <span class="token punctuation">{</span>
+                isFirstObj <span class="token operator">=</span> <span class="token punctuation">(</span>results<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>gameObject <span class="token operator">==</span> gameObject<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment" spellcheck="true">// 如果是，进行事件处理</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>isFirstObj<span class="token punctuation">)</span> 
+        <span class="token punctuation">{</span>
+            <span class="token comment" spellcheck="true">// do sth.</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <h3 id="优化方向"><a href="#优化方向" class="headerlink" title="优化方向"></a>优化方向</h3><h4 id="现存缺陷"><a href="#现存缺陷" class="headerlink" title="现存缺陷"></a>现存缺陷</h4><p>虽然以上使用 EventSystem.RaycastAll 手动进行一次检测的方式可以解决目前碰到的问题，但是在性能等方面，其还是存在一些优化点：  </p>
 <ol>
 <li>当前 UI 是否要进行事件处理的判断是在 Update 中做的，虽然不在点击区域之内的时候 Update 会立即返回不进行计算，但是大量的调用还是会存在一定的开销</li>
@@ -284,8 +417,8 @@
 <nav id="article-nav">
   
   
-    <a href="/2017/01/18/gamedesign-psychology/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">&quot;游戏心理学&quot;相关笔记</div>
+    <a href="/2018/06/24/minigame-dogejump/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title"></div>
       <i class="icon-circle-right"></i>
     </a>
   
@@ -415,15 +548,15 @@
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">unity</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">ui</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
               </li>
             
             <div class="clearfix"></div>

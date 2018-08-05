@@ -31,7 +31,8 @@
 
   
 
-</head>
+<link rel="stylesheet" href="/css/prism-atom-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
 
 <body>
   <div id="container" q-class="show:isCtnShow">
@@ -209,6 +210,53 @@
 
 
   
+    <article id="post-minigame-dogejump" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Doge-Jump-微信小游戏"><a href="#Doge-Jump-微信小游戏" class="headerlink" title="Doge-Jump 微信小游戏"></a>Doge-Jump 微信小游戏</h2><h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>本文用于记录微信小游戏开放之后，自己学习工作之余的娱乐练手项目，便于将来回顾与参考，其为一个简单的跑酷小游戏，直接基于h5开发，Github地址为：<a href="https://github.com/KJTang/Doge-Jump" target="_blank" rel="external"> Doge-Jump </a>  </p>
+<p>本文将分为以下几个章节做记录：  </p>
+<ul>
+<li>微信小游戏介绍</li>
+<li>开发准备</li>
+<li>基础框架</li>
+<li>游戏逻辑</li>
+<li>总结</li>
+</ul>
+<p><strong>注</strong>：本文完成时，业已发现原代码中存在的各项bug和缺陷，由于时间与精力的关系，不便于再做修改，故原代码只提供参考价值，注明于此。</p>
+<h4 id="微信小游戏介绍"><a href="#微信小游戏介绍" class="headerlink" title="微信小游戏介绍"></a>微信小游戏介绍</h4><p>继微信小程序之后，微信开放了小游戏的接口，其随开放带来的跳一跳小游戏在一夜之间攻占了整个朋友圈，也体现了目前微信小游戏的特点与定位：简单、休闲、魔性。<br>微信小游戏基于HTML5平台，使用JavaScript语言开发，可以直接通过HTML5的接口进行开发，也可以使用现成的HTML5开发引擎，例如cocos2d、egret等。</p>
+<h4 id="开发准备"><a href="#开发准备" class="headerlink" title="开发准备"></a>开发准备</h4><p>好奇之下，我开始接触小游戏的开发，通过微信官网的文档<a href="https://developers.weixin.qq.com/minigame/dev/index.html" target="_blank" rel="external"> 微信小游戏开发 </a>可以找到开发工具的下载和开发文档（在我刚开始尝试微信小游戏的开发时，还并没有小游戏的文档，现在微信官方已补全，故可通过官方文档快速上手小游戏的开发）<br>按照官方文档中提供的介绍，下载开发工具安装，即可直接进入小游戏的开发界面：  </p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/06/24/minigame-dogejump/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+
+
+
+
+
+
+
+  
     <article id="post-gamedesign-psychology" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -258,73 +306,6 @@
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2017/01/18/gamedesign-psychology/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-
-
-
-
-
-
-
-  
-    <article id="post-cocos2d-lua-binding" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/07/08/cocos2d-lua-binding/">Cocos2d-lua绑定自定义c++类</a>
-    </h1>
-  
-
-        
-        <a href="/2016/07/08/cocos2d-lua-binding/" class="archive-article-date">
-  	<time datetime="2016-07-08T11:41:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-07-08</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>最近在使用cocos2d-lua写一些小游戏，遇到了需要在lua中调用自定义的c++类的情况，于是花了一下午时间来踩这个坑，目前终于成功跑起来了，故在此做一个记录。</p>
-<ul>
-<li><h4 id="lua调用静态c-函数"><a href="#lua调用静态c-函数" class="headerlink" title="lua调用静态c++函数"></a>lua调用静态c++函数</h4>在lua中调用c++有很多中办法，例如可以直接使用lua_register来注册一个静态函数。如下：  </li>
-</ul>
-        
-          <a class="article-more-a" href="/2016/07/08/cocos2d-lua-binding/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">cocos2d</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2016/07/08/cocos2d-lua-binding/">展开全文 >></a>
         </p>
       
 
@@ -443,15 +424,15 @@
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">unity</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">ui</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
               </li>
             
             <div class="clearfix"></div>

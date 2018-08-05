@@ -22,7 +22,7 @@ Renderer执行绘制命令进行绘制">
 每一个ui元素提交绘制命令(RenderCommand)到绘制队列(RenderQueue)  
 绘制队列对将要绘制的元素进行排序，确定绘制顺序  
 Renderer执行绘制命令进行绘制">
-<meta property="og:updated_time" content="2017-01-19T03:54:25.000Z">
+<meta property="og:updated_time" content="2018-08-05T06:10:17.665Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Cocos2dx:绘制流程">
 <meta name="twitter:description" content="cocos2d绘制流程cocos2d进行绘制主要分成了三个步骤：   
@@ -47,7 +47,8 @@ Renderer执行绘制命令进行绘制">
 
   
 
-</head>
+<link rel="stylesheet" href="/css/prism-atom-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
 
 <body>
   <div id="container" q-class="show:isCtnShow">
@@ -183,397 +184,397 @@ Renderer执行绘制命令进行绘制">
 </ol>
 <a id="more"></a>   
 <h4 id="ui树"><a href="#ui树" class="headerlink" title="ui树"></a>ui树</h4><p>cocos2d的ui元素是通过一个树状结构来管理的，树的每个节点都是Node及其子类，例如正在显示的一个场景，Scene为树根，通过addChild方法添加的Layer、Sprite等都是其子节点。<br>cocos2d启动进入主循环后，每次循环都会遍历一边ui树，Director的mainloop方法如下：   </p>
-<pre><code class="c++"><span class="keyword">void</span> DisplayLinkDirector::mainLoop()
-{
-    <span class="keyword">if</span> (_purgeDirectorInNextLoop)
-    {
-        _purgeDirectorInNextLoop = <span class="literal">false</span>;
-        purgeDirector();
-    }
-    <span class="keyword">else</span> <span class="keyword">if</span> (_restartDirectorInNextLoop)
-    {
-        _restartDirectorInNextLoop = <span class="literal">false</span>;
-        restartDirector();
-    }
-    <span class="keyword">else</span> <span class="keyword">if</span> (! _invalid)
-    {
-        drawScene();
-        <span class="comment">// release the objects</span>
-        PoolManager::getInstance()-&gt;getCurrentPool()-&gt;clear();
-    }
-}
-</code></pre>
+<pre class="line-numbers language-cpp"><code class="language-cpp"><span class="token keyword">void</span> DisplayLinkDirector<span class="token operator">::</span><span class="token function">mainLoop</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>_purgeDirectorInNextLoop<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        _purgeDirectorInNextLoop <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+        <span class="token function">purgeDirector</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>_restartDirectorInNextLoop<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        _restartDirectorInNextLoop <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+        <span class="token function">restartDirector</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span> _invalid<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token function">drawScene</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment" spellcheck="true">// release the objects</span>
+        PoolManager<span class="token operator">::</span><span class="token function">getInstance</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">getCurrentPool</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">clear</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>跟绘制有关的即drawScene方法了，跳转过去，在Director::drawScene()中有：   </p>
-<pre><code class="c++">    <span class="keyword">if</span> (_runningScene)
-    {
-<span class="meta">#<span class="meta-keyword">if</span> (CC_USE_PHYSICS || (CC_USE_3D_PHYSICS &amp;&amp; CC_ENABLE_BULLET_INTEGRATION) || CC_USE_NAVMESH)</span>
-        _runningScene-&gt;stepPhysicsAndNavigation(_deltaTime);
-<span class="meta">#<span class="meta-keyword">endif</span></span>
-        <span class="comment">//clear draw stats</span>
-        _renderer-&gt;clearDrawStats();
+<pre class="line-numbers language-cpp"><code class="language-cpp">    <span class="token keyword">if</span> <span class="token punctuation">(</span>_runningScene<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+<span class="token macro property">#<span class="token directive keyword">if</span> (CC_USE_PHYSICS || (CC_USE_3D_PHYSICS &amp;&amp; CC_ENABLE_BULLET_INTEGRATION) || CC_USE_NAVMESH)</span>
+        _runningScene<span class="token operator">-</span><span class="token operator">></span><span class="token function">stepPhysicsAndNavigation</span><span class="token punctuation">(</span>_deltaTime<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token macro property">#<span class="token directive keyword">endif</span></span>
+        <span class="token comment" spellcheck="true">//clear draw stats</span>
+        _renderer<span class="token operator">-</span><span class="token operator">></span><span class="token function">clearDrawStats</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        <span class="comment">//render the scene</span>
-        _runningScene-&gt;render(_renderer);
+        <span class="token comment" spellcheck="true">//render the scene</span>
+        _runningScene<span class="token operator">-</span><span class="token operator">></span><span class="token function">render</span><span class="token punctuation">(</span>_renderer<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        _eventDispatcher-&gt;dispatchEvent(_eventAfterVisit);
-    }
-</code></pre>
+        _eventDispatcher<span class="token operator">-</span><span class="token operator">></span><span class="token function">dispatchEvent</span><span class="token punctuation">(</span>_eventAfterVisit<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>_runningScene就是当前正在显示的Scene，跳转到void Scene::render(Renderer* renderer)中，看到这么一句：   </p>
-<pre><code class="c++"><span class="comment">//visit the scene</span>
-visit(renderer, transform, <span class="number">0</span>);
-</code></pre>
+<pre class="line-numbers language-cpp"><code class="language-cpp">    <span class="token comment" spellcheck="true">//visit the scene</span>
+    <span class="token function">visit</span><span class="token punctuation">(</span>renderer<span class="token punctuation">,</span> transform<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 <p>这一句就是通过递归的方式来遍历ui树，visit方法在Node类中有实现，Scene并没有重写，所以看看Node的实现：   </p>
-<pre><code class="c++"><span class="keyword">void</span> Node::visit(Renderer* renderer, <span class="keyword">const</span> Mat4 &amp;parentTransform, <span class="keyword">uint32_t</span> parentFlags)
-{
-    <span class="comment">// quick return if not visible. children won't be drawn.</span>
-    <span class="keyword">if</span> (!_visible)
-    {
-        <span class="keyword">return</span>;
-    }
+<pre class="line-numbers language-cpp"><code class="language-cpp"><span class="token keyword">void</span> Node<span class="token operator">::</span><span class="token function">visit</span><span class="token punctuation">(</span>Renderer<span class="token operator">*</span> renderer<span class="token punctuation">,</span> <span class="token keyword">const</span> Mat4 <span class="token operator">&amp;</span>parentTransform<span class="token punctuation">,</span> uint32_t parentFlags<span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+    <span class="token comment" spellcheck="true">// quick return if not visible. children won't be drawn.</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>_visible<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
 
-    <span class="keyword">uint32_t</span> flags = processParentFlags(parentTransform, parentFlags);
+    uint32_t flags <span class="token operator">=</span> <span class="token function">processParentFlags</span><span class="token punctuation">(</span>parentTransform<span class="token punctuation">,</span> parentFlags<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    <span class="comment">// IMPORTANT:</span>
-    <span class="comment">// To ease the migration to v3.0, we still support the Mat4 stack,</span>
-    <span class="comment">// but it is deprecated and your code should not rely on it</span>
-    _director-&gt;pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    _director-&gt;loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
+    <span class="token comment" spellcheck="true">// IMPORTANT:</span>
+    <span class="token comment" spellcheck="true">// To ease the migration to v3.0, we still support the Mat4 stack,</span>
+    <span class="token comment" spellcheck="true">// but it is deprecated and your code should not rely on it</span>
+    _director<span class="token operator">-</span><span class="token operator">></span><span class="token function">pushMatrix</span><span class="token punctuation">(</span>MATRIX_STACK_TYPE<span class="token operator">::</span>MATRIX_STACK_MODELVIEW<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    _director<span class="token operator">-</span><span class="token operator">></span><span class="token function">loadMatrix</span><span class="token punctuation">(</span>MATRIX_STACK_TYPE<span class="token operator">::</span>MATRIX_STACK_MODELVIEW<span class="token punctuation">,</span> _modelViewTransform<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    <span class="keyword">bool</span> visibleByCamera = isVisitableByVisitingCamera();
+    <span class="token keyword">bool</span> visibleByCamera <span class="token operator">=</span> <span class="token function">isVisitableByVisitingCamera</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    <span class="keyword">int</span> i = <span class="number">0</span>;
+    <span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
 
-    <span class="keyword">if</span>(!_children.empty())
-    {
-        sortAllChildren();
-        <span class="comment">// draw children zOrder &lt; 0</span>
-        <span class="keyword">for</span>( ; i &lt; _children.size(); i++ )
-        {
-            <span class="keyword">auto</span> node = _children.at(i);
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>_children<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token function">sortAllChildren</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment" spellcheck="true">// draw children zOrder &lt; 0</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span> <span class="token punctuation">;</span> i <span class="token operator">&lt;</span> _children<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span> <span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token keyword">auto</span> node <span class="token operator">=</span> _children<span class="token punctuation">.</span><span class="token function">at</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-            <span class="keyword">if</span> (node &amp;&amp; node-&gt;_localZOrder &lt; <span class="number">0</span>)
-                node-&gt;visit(renderer, _modelViewTransform, flags);
-            <span class="keyword">else</span>
-                <span class="keyword">break</span>;
-        }
-        <span class="comment">// self draw</span>
-        <span class="keyword">if</span> (visibleByCamera)
-            <span class="keyword">this</span>-&gt;draw(renderer, _modelViewTransform, flags);
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>node <span class="token operator">&amp;&amp;</span> node<span class="token operator">-</span><span class="token operator">></span>_localZOrder <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span>
+                node<span class="token operator">-</span><span class="token operator">></span><span class="token function">visit</span><span class="token punctuation">(</span>renderer<span class="token punctuation">,</span> _modelViewTransform<span class="token punctuation">,</span> flags<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">else</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment" spellcheck="true">// self draw</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>visibleByCamera<span class="token punctuation">)</span>
+            <span class="token keyword">this</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">draw</span><span class="token punctuation">(</span>renderer<span class="token punctuation">,</span> _modelViewTransform<span class="token punctuation">,</span> flags<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        <span class="keyword">for</span>(<span class="keyword">auto</span> it=_children.cbegin()+i; it != _children.cend(); ++it)
-            (*it)-&gt;visit(renderer, _modelViewTransform, flags);
-    }
-    <span class="keyword">else</span> <span class="keyword">if</span> (visibleByCamera)
-    {
-        <span class="keyword">this</span>-&gt;draw(renderer, _modelViewTransform, flags);
-    }
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">auto</span> it<span class="token operator">=</span>_children<span class="token punctuation">.</span><span class="token function">cbegin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">+</span>i<span class="token punctuation">;</span> it <span class="token operator">!=</span> _children<span class="token punctuation">.</span><span class="token function">cend</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>it<span class="token punctuation">)</span>
+            <span class="token punctuation">(</span><span class="token operator">*</span>it<span class="token punctuation">)</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">visit</span><span class="token punctuation">(</span>renderer<span class="token punctuation">,</span> _modelViewTransform<span class="token punctuation">,</span> flags<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>visibleByCamera<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token keyword">this</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">draw</span><span class="token punctuation">(</span>renderer<span class="token punctuation">,</span> _modelViewTransform<span class="token punctuation">,</span> flags<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
 
-    _director-&gt;popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-}
-</code></pre>
+    _director<span class="token operator">-</span><span class="token operator">></span><span class="token function">popMatrix</span><span class="token punctuation">(</span>MATRIX_STACK_TYPE<span class="token operator">::</span>MATRIX_STACK_MODELVIEW<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>方法中先对此Node进行了一个可见判断，如果不可见，则不用绘制。如果此Node有子节点，则对子节点进行排序后递归调用visit方法。排序是通过子节点的zOrder来进行的，zOrder越小则排在越前面，先依次递归zOrder小于0的子节点，然后是自身，再然后是zOrder大于0的子节点。可以看出这是一个前序的遍历方法，确保了绘制顺序不出现问题。<br>Node绘制自身调用了一个draw方法，再到draw方法里：   </p>
-<pre><code class="c++"><span class="keyword">void</span> Node::draw(Renderer* renderer, <span class="keyword">const</span> Mat4 &amp;transform, <span class="keyword">uint32_t</span> flags)
-{
-}
-</code></pre>
+<pre class="line-numbers language-cpp"><code class="language-cpp"><span class="token keyword">void</span> Node<span class="token operator">::</span><span class="token function">draw</span><span class="token punctuation">(</span>Renderer<span class="token operator">*</span> renderer<span class="token punctuation">,</span> <span class="token keyword">const</span> Mat4 <span class="token operator">&amp;</span>transform<span class="token punctuation">,</span> uint32_t flags<span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
 <p>嗯，是空的。因为Node并不是用来加载显示纹理的，前面提到显示纹理是交给了Sprite类，所以应该看Sprite类的draw方法：   </p>
-<pre><code class="c++"><span class="keyword">void</span> Sprite::draw(Renderer *renderer, <span class="keyword">const</span> Mat4 &amp;transform, <span class="keyword">uint32_t</span> flags)
-{
-<span class="meta">#<span class="meta-keyword">if</span> CC_USE_CULLING</span>
-    <span class="comment">// Don't do calculate the culling if the transform was not updated</span>
-    _insideBounds = (flags &amp; FLAGS_TRANSFORM_DIRTY) ? renderer-&gt;checkVisibility(transform, _contentSize) : _insideBounds;
+<pre class="line-numbers language-cpp"><code class="language-cpp"><span class="token keyword">void</span> Sprite<span class="token operator">::</span><span class="token function">draw</span><span class="token punctuation">(</span>Renderer <span class="token operator">*</span>renderer<span class="token punctuation">,</span> <span class="token keyword">const</span> Mat4 <span class="token operator">&amp;</span>transform<span class="token punctuation">,</span> uint32_t flags<span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+<span class="token macro property">#<span class="token directive keyword">if</span> CC_USE_CULLING</span>
+    <span class="token comment" spellcheck="true">// Don't do calculate the culling if the transform was not updated</span>
+    _insideBounds <span class="token operator">=</span> <span class="token punctuation">(</span>flags <span class="token operator">&amp;</span> FLAGS_TRANSFORM_DIRTY<span class="token punctuation">)</span> <span class="token operator">?</span> renderer<span class="token operator">-</span><span class="token operator">></span><span class="token function">checkVisibility</span><span class="token punctuation">(</span>transform<span class="token punctuation">,</span> _contentSize<span class="token punctuation">)</span> <span class="token operator">:</span> _insideBounds<span class="token punctuation">;</span>
 
-    <span class="keyword">if</span>(_insideBounds)
-<span class="meta">#<span class="meta-keyword">endif</span></span>
-    {
-        _trianglesCommand.init(_globalZOrder, _texture-&gt;getName(), getGLProgramState(), _blendFunc, _polyInfo.triangles, transform, flags);
-        renderer-&gt;addCommand(&amp;_trianglesCommand);
-    }
-}
-</code></pre>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>_insideBounds<span class="token punctuation">)</span>
+<span class="token macro property">#<span class="token directive keyword">endif</span></span>
+    <span class="token punctuation">{</span>
+        _trianglesCommand<span class="token punctuation">.</span><span class="token function">init</span><span class="token punctuation">(</span>_globalZOrder<span class="token punctuation">,</span> _texture<span class="token operator">-</span><span class="token operator">></span><span class="token function">getName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">getGLProgramState</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> _blendFunc<span class="token punctuation">,</span> _polyInfo<span class="token punctuation">.</span>triangles<span class="token punctuation">,</span> transform<span class="token punctuation">,</span> flags<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        renderer<span class="token operator">-</span><span class="token operator">></span><span class="token function">addCommand</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>_trianglesCommand<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>_insideBounds是对此Sprite的可见性判断，如果不在屏幕内则裁剪掉，不参与绘制。<br>通过判断后，Sprite将一个RenderCommand提交到了Renderer。</p>
 <h4 id="RenderCommand"><a href="#RenderCommand" class="headerlink" title="RenderCommand"></a>RenderCommand</h4><p>cocos2d中RenderCommand有很多种，在RenderCommand类中定义了：  </p>
-<pre><code class="c++"><span class="keyword">enum</span> <span class="keyword">class</span> Type
-{
-    <span class="comment">/** Reserved type.*/</span>
-    UNKNOWN_COMMAND,
-    <span class="comment">/** Quad command, used for draw quad.*/</span>
-    QUAD_COMMAND,
-    <span class="comment">/**Custom command, used for calling callback for rendering.*/</span>
-    CUSTOM_COMMAND,
-    <span class="comment">/**Batch command, used for draw batches in texture atlas.*/</span>
-    BATCH_COMMAND,
-    <span class="comment">/**Group command, which can group command in a tree hierarchy.*/</span>
-    GROUP_COMMAND,
-    <span class="comment">/**Mesh command, used to draw 3D meshes.*/</span>
-    MESH_COMMAND,
-    <span class="comment">/**Primitive command, used to draw primitives such as lines, points and triangles.*/</span>
-    PRIMITIVE_COMMAND,
-    <span class="comment">/**Triangles command, used to draw triangles.*/</span>
-    TRIANGLES_COMMAND
-};
-</code></pre>
+<pre class="line-numbers language-cpp"><code class="language-cpp">    <span class="token keyword">enum</span> <span class="token keyword">class</span> <span class="token class-name">Type</span>
+    <span class="token punctuation">{</span>
+        <span class="token comment" spellcheck="true">/** Reserved type.*/</span>
+        UNKNOWN_COMMAND<span class="token punctuation">,</span>
+        <span class="token comment" spellcheck="true">/** Quad command, used for draw quad.*/</span>
+        QUAD_COMMAND<span class="token punctuation">,</span>
+        <span class="token comment" spellcheck="true">/**Custom command, used for calling callback for rendering.*/</span>
+        CUSTOM_COMMAND<span class="token punctuation">,</span>
+        <span class="token comment" spellcheck="true">/**Batch command, used for draw batches in texture atlas.*/</span>
+        BATCH_COMMAND<span class="token punctuation">,</span>
+        <span class="token comment" spellcheck="true">/**Group command, which can group command in a tree hierarchy.*/</span>
+        GROUP_COMMAND<span class="token punctuation">,</span>
+        <span class="token comment" spellcheck="true">/**Mesh command, used to draw 3D meshes.*/</span>
+        MESH_COMMAND<span class="token punctuation">,</span>
+        <span class="token comment" spellcheck="true">/**Primitive command, used to draw primitives such as lines, points and triangles.*/</span>
+        PRIMITIVE_COMMAND<span class="token punctuation">,</span>
+        <span class="token comment" spellcheck="true">/**Triangles command, used to draw triangles.*/</span>
+        TRIANGLES_COMMAND
+    <span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>不同的RenderCommand会用在不同的地方，例如在Sprite里面用到的是TrianglesCommand：  </p>
-<pre><code class="c++"><span class="keyword">class</span> CC_DLL TrianglesCommand : <span class="keyword">public</span> RenderCommand
-{
-<span class="keyword">public</span>:
-    <span class="comment">/**The structure of Triangles. */</span>
-    <span class="keyword">struct</span> Triangles
-    {
-        <span class="comment">/**Vertex data pointer.*/</span>
-        V3F_C4B_T2F* verts;
-        <span class="comment">/**Index data pointer.*/</span>
-        <span class="keyword">unsigned</span> <span class="keyword">short</span>* indices;
-        <span class="comment">/**The number of vertices.*/</span>
-        <span class="keyword">ssize_t</span> vertCount;
-        <span class="comment">/**The number of indices.*/</span>
-        <span class="keyword">ssize_t</span> indexCount;
-    };
-    <span class="comment">// ...</span>
-<span class="keyword">protected</span>:
-    <span class="comment">/**Generate the material ID by textureID, glProgramState, and blend function.*/</span>
-    <span class="function"><span class="keyword">void</span> <span class="title">generateMaterialID</span><span class="params">()</span></span>;
+<pre class="line-numbers language-cpp"><code class="language-cpp"><span class="token keyword">class</span> <span class="token class-name">CC_DLL</span> TrianglesCommand <span class="token operator">:</span> <span class="token keyword">public</span> RenderCommand
+<span class="token punctuation">{</span>
+<span class="token keyword">public</span><span class="token operator">:</span>
+    <span class="token comment" spellcheck="true">/**The structure of Triangles. */</span>
+    <span class="token keyword">struct</span> Triangles
+    <span class="token punctuation">{</span>
+        <span class="token comment" spellcheck="true">/**Vertex data pointer.*/</span>
+        V3F_C4B_T2F<span class="token operator">*</span> verts<span class="token punctuation">;</span>
+        <span class="token comment" spellcheck="true">/**Index data pointer.*/</span>
+        <span class="token keyword">unsigned</span> <span class="token keyword">short</span><span class="token operator">*</span> indices<span class="token punctuation">;</span>
+        <span class="token comment" spellcheck="true">/**The number of vertices.*/</span>
+        ssize_t vertCount<span class="token punctuation">;</span>
+        <span class="token comment" spellcheck="true">/**The number of indices.*/</span>
+        ssize_t indexCount<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token comment" spellcheck="true">// ...</span>
+<span class="token keyword">protected</span><span class="token operator">:</span>
+    <span class="token comment" spellcheck="true">/**Generate the material ID by textureID, glProgramState, and blend function.*/</span>
+    <span class="token keyword">void</span> <span class="token function">generateMaterialID</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    <span class="comment">/**Generated material id.*/</span>
-    <span class="keyword">uint32_t</span> _materialID;
-    <span class="comment">/**OpenGL handle for texture.*/</span>
-    GLuint _textureID;
-    <span class="comment">/**GLprogramstate for the commmand. encapsulate shaders and uniforms.*/</span>
-    GLProgramState* _glProgramState;
-    <span class="comment">/**Blend function when rendering the triangles.*/</span>
-    BlendFunc _blendType;
-    <span class="comment">/**Rendered triangles.*/</span>
-    Triangles _triangles;
-    <span class="comment">/**Model view matrix when rendering the triangles.*/</span>
-    Mat4 _mv;
-};
-</code></pre>
+    <span class="token comment" spellcheck="true">/**Generated material id.*/</span>
+    uint32_t _materialID<span class="token punctuation">;</span>
+    <span class="token comment" spellcheck="true">/**OpenGL handle for texture.*/</span>
+    GLuint _textureID<span class="token punctuation">;</span>
+    <span class="token comment" spellcheck="true">/**GLprogramstate for the commmand. encapsulate shaders and uniforms.*/</span>
+    GLProgramState<span class="token operator">*</span> _glProgramState<span class="token punctuation">;</span>
+    <span class="token comment" spellcheck="true">/**Blend function when rendering the triangles.*/</span>
+    BlendFunc _blendType<span class="token punctuation">;</span>
+    <span class="token comment" spellcheck="true">/**Rendered triangles.*/</span>
+    Triangles _triangles<span class="token punctuation">;</span>
+    <span class="token comment" spellcheck="true">/**Model view matrix when rendering the triangles.*/</span>
+    Mat4 _mv<span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>（删去了一部分代码）其中定义了一个struct类用于描述三角形，其中V3F_C4B_T2F用于描述顶点信息（Vertices：顶点，3个float；Color：颜色，4位；Texture：纹理，2个float)，剩下三个分别是索引信息，顶点数和索引数。<br>所以可以看出RenderCommand实际上是对一些opengl参数的封装，遍历完ui树后，cocos2d再将opengl参数传递给opengl进行绘制。</p>
 <h4 id="Renderer"><a href="#Renderer" class="headerlink" title="Renderer"></a>Renderer</h4><p>RenderCommand提交完毕后，Renderer会根据绘制命令进行绘制。在Scene的render方法最后，调用了Renderer的render方法：  </p>
-<pre><code class="c++">renderer-&gt;render();
-</code></pre>
+<pre class="line-numbers language-cpp"><code class="language-cpp">        renderer<span class="token operator">-</span><span class="token operator">></span><span class="token function">render</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p>Renderer的render方法如下：  </p>
-<pre><code class="c++"><span class="keyword">void</span> Renderer::render()
-{
-    <span class="comment">//Uncomment this once everything is rendered by new renderer</span>
-    <span class="comment">//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);</span>
+<pre class="line-numbers language-cpp"><code class="language-cpp"><span class="token keyword">void</span> Renderer<span class="token operator">::</span><span class="token function">render</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+    <span class="token comment" spellcheck="true">//Uncomment this once everything is rendered by new renderer</span>
+    <span class="token comment" spellcheck="true">//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);</span>
 
-    <span class="comment">//<span class="doctag">TODO:</span> setup camera or MVP</span>
-    _isRendering = <span class="literal">true</span>;
+    <span class="token comment" spellcheck="true">//TODO: setup camera or MVP</span>
+    _isRendering <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
 
-    <span class="keyword">if</span> (_glViewAssigned)
-    {
-        <span class="comment">//Process render commands</span>
-        <span class="comment">//1. Sort render commands based on ID</span>
-        <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;renderqueue : _renderGroups)
-        {
-            renderqueue.sort();
-        }
-        visitRenderQueue(_renderGroups[<span class="number">0</span>]);
-    }
-    clean();
-    _isRendering = <span class="literal">false</span>;
-}
-</code></pre>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>_glViewAssigned<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token comment" spellcheck="true">//Process render commands</span>
+        <span class="token comment" spellcheck="true">//1. Sort render commands based on ID</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span> <span class="token operator">&amp;</span>renderqueue <span class="token operator">:</span> _renderGroups<span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            renderqueue<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token function">visitRenderQueue</span><span class="token punctuation">(</span>_renderGroups<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">clean</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    _isRendering <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>Renderer通过维护的RenderQueue数组来访问RenderCommand，默认的主队列是标记为0的RenderQueue，之后的RenderQueue跟GroupCommand有关，每一个GroupCommand会指向一个RenderQueue，这样就可以采用不同的绘制选项。<br>这里依次访问所有队列进行了排序，看看RenderQueue的sort方法：  </p>
-<pre><code class="c++"><span class="keyword">void</span> RenderQueue::sort()
-{
-    <span class="comment">// Don't sort _queue0, it already comes sorted</span>
-    <span class="built_in">std</span>::sort(<span class="built_in">std</span>::begin(_commands[QUEUE_GROUP::TRANSPARENT_3D]), <span class="built_in">std</span>::end(_commands[QUEUE_GROUP::TRANSPARENT_3D]), compare3DCommand);
-    <span class="built_in">std</span>::sort(<span class="built_in">std</span>::begin(_commands[QUEUE_GROUP::GLOBALZ_NEG]), <span class="built_in">std</span>::end(_commands[QUEUE_GROUP::GLOBALZ_NEG]), compareRenderCommand);
-    <span class="built_in">std</span>::sort(<span class="built_in">std</span>::begin(_commands[QUEUE_GROUP::GLOBALZ_POS]), <span class="built_in">std</span>::end(_commands[QUEUE_GROUP::GLOBALZ_POS]), compareRenderCommand);
-}
-</code></pre>
+<pre class="line-numbers language-cpp"><code class="language-cpp"><span class="token keyword">void</span> RenderQueue<span class="token operator">::</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+    <span class="token comment" spellcheck="true">// Don't sort _queue0, it already comes sorted</span>
+    std<span class="token operator">::</span><span class="token function">sort</span><span class="token punctuation">(</span>std<span class="token operator">::</span><span class="token function">begin</span><span class="token punctuation">(</span>_commands<span class="token punctuation">[</span>QUEUE_GROUP<span class="token operator">::</span>TRANSPARENT_3D<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> std<span class="token operator">::</span><span class="token function">end</span><span class="token punctuation">(</span>_commands<span class="token punctuation">[</span>QUEUE_GROUP<span class="token operator">::</span>TRANSPARENT_3D<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> compare3DCommand<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span><span class="token function">sort</span><span class="token punctuation">(</span>std<span class="token operator">::</span><span class="token function">begin</span><span class="token punctuation">(</span>_commands<span class="token punctuation">[</span>QUEUE_GROUP<span class="token operator">::</span>GLOBALZ_NEG<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> std<span class="token operator">::</span><span class="token function">end</span><span class="token punctuation">(</span>_commands<span class="token punctuation">[</span>QUEUE_GROUP<span class="token operator">::</span>GLOBALZ_NEG<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> compareRenderCommand<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span><span class="token function">sort</span><span class="token punctuation">(</span>std<span class="token operator">::</span><span class="token function">begin</span><span class="token punctuation">(</span>_commands<span class="token punctuation">[</span>QUEUE_GROUP<span class="token operator">::</span>GLOBALZ_POS<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> std<span class="token operator">::</span><span class="token function">end</span><span class="token punctuation">(</span>_commands<span class="token punctuation">[</span>QUEUE_GROUP<span class="token operator">::</span>GLOBALZ_POS<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> compareRenderCommand<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>第一句是对3d的绘制命令进行了排序，这里暂且不去了解；后两句是对GlobalZOrder小于0和大于0的命令进行了排序，GlobalZOrder为0的不进行排序。<br>原因是所有ui元素默认的GlobalZOrder都是0, 在ui树的遍历过程中，实际上已经完成了这些ui元素的排序（前序遍历），故这里不需要再排序。GlobalZOrder的用途实际上是动态改变一个ui元素的绘制次序用的，所以一般情况下不需要对GlobalZOrder进行特殊的设置，这样可以减少性能消耗。</p>
 <p>接着render方法调用了visitRenderCommand方法：  </p>
-<pre><code class="c++"><span class="keyword">void</span> Renderer::visitRenderQueue(RenderQueue&amp; <span class="built_in">queue</span>)
-{
-    <span class="built_in">queue</span>.saveRenderState();
+<pre class="line-numbers language-cpp"><code class="language-cpp"><span class="token keyword">void</span> Renderer<span class="token operator">::</span><span class="token function">visitRenderQueue</span><span class="token punctuation">(</span>RenderQueue<span class="token operator">&amp;</span> queue<span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+    queue<span class="token punctuation">.</span><span class="token function">saveRenderState</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    <span class="comment">//</span>
-    <span class="comment">//Process Global-Z = 0 Queue</span>
-    <span class="comment">//</span>
-    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; zZeroQueue = <span class="built_in">queue</span>.getSubQueue(RenderQueue::QUEUE_GROUP::GLOBALZ_ZERO);
-    <span class="keyword">if</span> (zZeroQueue.size() &gt; <span class="number">0</span>)
-    {
-        <span class="keyword">if</span>(_isDepthTestFor2D)
-        {
-            glEnable(GL_DEPTH_TEST);
-            glDepthMask(<span class="literal">true</span>);
+    <span class="token comment" spellcheck="true">//</span>
+    <span class="token comment" spellcheck="true">//Process Global-Z = 0 Queue</span>
+    <span class="token comment" spellcheck="true">//</span>
+    <span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> zZeroQueue <span class="token operator">=</span> queue<span class="token punctuation">.</span><span class="token function">getSubQueue</span><span class="token punctuation">(</span>RenderQueue<span class="token operator">::</span>QUEUE_GROUP<span class="token operator">::</span>GLOBALZ_ZERO<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>zZeroQueue<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>_isDepthTestFor2D<span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token function">glEnable</span><span class="token punctuation">(</span>GL_DEPTH_TEST<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">glDepthMask</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-            RenderState::StateBlock::_defaultState-&gt;setDepthTest(<span class="literal">true</span>);
-            RenderState::StateBlock::_defaultState-&gt;setDepthWrite(<span class="literal">true</span>);
+            RenderState<span class="token operator">::</span>StateBlock<span class="token operator">::</span>_defaultState<span class="token operator">-</span><span class="token operator">></span><span class="token function">setDepthTest</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            RenderState<span class="token operator">::</span>StateBlock<span class="token operator">::</span>_defaultState<span class="token operator">-</span><span class="token operator">></span><span class="token function">setDepthWrite</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        }
-        <span class="keyword">else</span>
-        {
-            glDisable(GL_DEPTH_TEST);
-            glDepthMask(<span class="literal">false</span>);
+        <span class="token punctuation">}</span>
+        <span class="token keyword">else</span>
+        <span class="token punctuation">{</span>
+            <span class="token function">glDisable</span><span class="token punctuation">(</span>GL_DEPTH_TEST<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">glDepthMask</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-            RenderState::StateBlock::_defaultState-&gt;setDepthTest(<span class="literal">false</span>);
-            RenderState::StateBlock::_defaultState-&gt;setDepthWrite(<span class="literal">false</span>);
+            RenderState<span class="token operator">::</span>StateBlock<span class="token operator">::</span>_defaultState<span class="token operator">-</span><span class="token operator">></span><span class="token function">setDepthTest</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            RenderState<span class="token operator">::</span>StateBlock<span class="token operator">::</span>_defaultState<span class="token operator">-</span><span class="token operator">></span><span class="token function">setDepthWrite</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        }
-        <span class="keyword">for</span> (<span class="keyword">auto</span> it = zZeroQueue.cbegin(); it != zZeroQueue.cend(); ++it)
-        {
-            processRenderCommand(*it);
-        }
-        flush();
-    }
+        <span class="token punctuation">}</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span> it <span class="token operator">=</span> zZeroQueue<span class="token punctuation">.</span><span class="token function">cbegin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> it <span class="token operator">!=</span> zZeroQueue<span class="token punctuation">.</span><span class="token function">cend</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>it<span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token function">processRenderCommand</span><span class="token punctuation">(</span><span class="token operator">*</span>it<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token function">flush</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
 
-    <span class="built_in">queue</span>.restoreRenderState();
-}
-</code></pre>
+    queue<span class="token punctuation">.</span><span class="token function">restoreRenderState</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>代码比较长，这里只保留GlobalZOrder为0的，方法开始时是一些opengl参数的处理，比如深度测试的开启与否，然后出现一句processRenderCommand，从名字上看应该是执行绘制命令，开始绘制了：   </p>
-<pre><code class="c++"><span class="keyword">void</span> Renderer::processRenderCommand(RenderCommand* command)
-{
-    <span class="keyword">auto</span> commandType = command-&gt;getType();
-    <span class="keyword">if</span>( RenderCommand::Type::TRIANGLES_COMMAND == commandType)
-    {
-        <span class="comment">//Draw if we have batched other commands which are not triangle command</span>
-        flush3D();
-        flushQuads();
+<pre class="line-numbers language-cpp"><code class="language-cpp"><span class="token keyword">void</span> Renderer<span class="token operator">::</span><span class="token function">processRenderCommand</span><span class="token punctuation">(</span>RenderCommand<span class="token operator">*</span> command<span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+    <span class="token keyword">auto</span> commandType <span class="token operator">=</span> command<span class="token operator">-</span><span class="token operator">></span><span class="token function">getType</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span> RenderCommand<span class="token operator">::</span>Type<span class="token operator">::</span>TRIANGLES_COMMAND <span class="token operator">==</span> commandType<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token comment" spellcheck="true">//Draw if we have batched other commands which are not triangle command</span>
+        <span class="token function">flush3D</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">flushQuads</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        <span class="comment">//Process triangle command</span>
-        <span class="keyword">auto</span> cmd = <span class="keyword">static_cast</span>&lt;TrianglesCommand*&gt;(command);
+        <span class="token comment" spellcheck="true">//Process triangle command</span>
+        <span class="token keyword">auto</span> cmd <span class="token operator">=</span> <span class="token keyword">static_cast</span><span class="token operator">&lt;</span>TrianglesCommand<span class="token operator">*</span><span class="token operator">></span><span class="token punctuation">(</span>command<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        <span class="comment">//Draw batched Triangles if necessary</span>
-        <span class="keyword">if</span>(cmd-&gt;isSkipBatching() || _filledVertex + cmd-&gt;getVertexCount() &gt; VBO_SIZE || _filledIndex + cmd-&gt;getIndexCount() &gt; INDEX_VBO_SIZE)
-        {
-            CCASSERT(cmd-&gt;getVertexCount()&gt;= <span class="number">0</span> &amp;&amp; cmd-&gt;getVertexCount() &lt; VBO_SIZE, <span class="string">"VBO for vertex is not big enough, please break the data down or use customized render command"</span>);
-            CCASSERT(cmd-&gt;getIndexCount()&gt;= <span class="number">0</span> &amp;&amp; cmd-&gt;getIndexCount() &lt; INDEX_VBO_SIZE, <span class="string">"VBO for index is not big enough, please break the data down or use customized render command"</span>);
-            <span class="comment">//Draw batched Triangles if VBO is full</span>
-            drawBatchedTriangles();
-        }
+        <span class="token comment" spellcheck="true">//Draw batched Triangles if necessary</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>cmd<span class="token operator">-</span><span class="token operator">></span><span class="token function">isSkipBatching</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">||</span> _filledVertex <span class="token operator">+</span> cmd<span class="token operator">-</span><span class="token operator">></span><span class="token function">getVertexCount</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">></span> VBO_SIZE <span class="token operator">||</span> _filledIndex <span class="token operator">+</span> cmd<span class="token operator">-</span><span class="token operator">></span><span class="token function">getIndexCount</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">></span> INDEX_VBO_SIZE<span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token function">CCASSERT</span><span class="token punctuation">(</span>cmd<span class="token operator">-</span><span class="token operator">></span><span class="token function">getVertexCount</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">>=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> cmd<span class="token operator">-</span><span class="token operator">></span><span class="token function">getVertexCount</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> VBO_SIZE<span class="token punctuation">,</span> <span class="token string">"VBO for vertex is not big enough, please break the data down or use customized render command"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">CCASSERT</span><span class="token punctuation">(</span>cmd<span class="token operator">-</span><span class="token operator">></span><span class="token function">getIndexCount</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">>=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> cmd<span class="token operator">-</span><span class="token operator">></span><span class="token function">getIndexCount</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> INDEX_VBO_SIZE<span class="token punctuation">,</span> <span class="token string">"VBO for index is not big enough, please break the data down or use customized render command"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment" spellcheck="true">//Draw batched Triangles if VBO is full</span>
+            <span class="token function">drawBatchedTriangles</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
 
-        <span class="comment">//Batch Triangles</span>
-        _batchedCommands.push_back(cmd);
+        <span class="token comment" spellcheck="true">//Batch Triangles</span>
+        _batchedCommands<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>cmd<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        fillVerticesAndIndices(cmd);
+        <span class="token function">fillVerticesAndIndices</span><span class="token punctuation">(</span>cmd<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        <span class="keyword">if</span>(cmd-&gt;isSkipBatching())
-        {
-            drawBatchedTriangles();
-        }
+        <span class="token keyword">if</span><span class="token punctuation">(</span>cmd<span class="token operator">-</span><span class="token operator">></span><span class="token function">isSkipBatching</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token function">drawBatchedTriangles</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
 
-    }
-    <span class="comment">// ...</span>
-    <span class="keyword">else</span>
-    {
-        CCLOGERROR(<span class="string">"Unknown commands in renderQueue"</span>);
-    }
-}
-</code></pre>
+    <span class="token punctuation">}</span>
+    <span class="token comment" spellcheck="true">// ...</span>
+    <span class="token keyword">else</span>
+    <span class="token punctuation">{</span>
+        <span class="token function">CCLOGERROR</span><span class="token punctuation">(</span><span class="token string">"Unknown commands in renderQueue"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>这个方法主要是根据不同的绘制命令进行不同的处理，代码较多，只保留了TrianglesCommand的处理。对TrianglesCommand的处理是，首先先绘制之前缓存的其它种类命令，例如QuadCommand等，然后如果缓存队列不满或者没有设置成不参与批绘制，则将当前命令添加到缓存队列，留带稍后一起处理。  </p>
 <p>drawBatchedTriangles就是对已经缓存的TrianglesCommand进行绘制的方法：  </p>
-<pre><code class="c++"><span class="keyword">void</span> Renderer::drawBatchedTriangles()
-{
-    <span class="comment">//<span class="doctag">TODO:</span> we can improve the draw performance by insert material switching command before hand.</span>
+<pre class="line-numbers language-cpp"><code class="language-cpp"><span class="token keyword">void</span> Renderer<span class="token operator">::</span><span class="token function">drawBatchedTriangles</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+    <span class="token comment" spellcheck="true">//TODO: we can improve the draw performance by insert material switching command before hand.</span>
 
-    <span class="keyword">int</span> indexToDraw = <span class="number">0</span>;
-    <span class="keyword">int</span> startIndex = <span class="number">0</span>;
+    <span class="token keyword">int</span> indexToDraw <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> startIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
 
-    <span class="comment">//Upload buffer to VBO</span>
-    <span class="keyword">if</span>(_filledVertex &lt;= <span class="number">0</span> || _filledIndex &lt;= <span class="number">0</span> || _batchedCommands.empty())
-    {
-        <span class="keyword">return</span>;
-    }
+    <span class="token comment" spellcheck="true">//Upload buffer to VBO</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>_filledVertex <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">||</span> _filledIndex <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">||</span> _batchedCommands<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
 
-    <span class="keyword">if</span> (Configuration::getInstance()-&gt;supportsShareableVAO())
-    {
-        <span class="comment">//Bind VAO</span>
-        GL::bindVAO(_buffersVAO);
-        <span class="comment">//Set VBO data</span>
-        glBindBuffer(GL_ARRAY_BUFFER, _buffersVBO[<span class="number">0</span>]);
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>Configuration<span class="token operator">::</span><span class="token function">getInstance</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">supportsShareableVAO</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token comment" spellcheck="true">//Bind VAO</span>
+        GL<span class="token operator">::</span><span class="token function">bindVAO</span><span class="token punctuation">(</span>_buffersVAO<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment" spellcheck="true">//Set VBO data</span>
+        <span class="token function">glBindBuffer</span><span class="token punctuation">(</span>GL_ARRAY_BUFFER<span class="token punctuation">,</span> _buffersVBO<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        <span class="comment">// option 1: subdata</span>
-<span class="comment">//        glBufferSubData(GL_ARRAY_BUFFER, sizeof(_quads[0])*start, sizeof(_quads[0]) * n , &amp;_quads[start] );</span>
+        <span class="token comment" spellcheck="true">// option 1: subdata</span>
+<span class="token comment" spellcheck="true">//        glBufferSubData(GL_ARRAY_BUFFER, sizeof(_quads[0])*start, sizeof(_quads[0]) * n , &amp;_quads[start] );</span>
 
-        <span class="comment">// option 2: data</span>
-<span class="comment">//        glBufferData(GL_ARRAY_BUFFER, sizeof(quads_[0]) * (n-start), &amp;quads_[start], GL_DYNAMIC_DRAW);</span>
+        <span class="token comment" spellcheck="true">// option 2: data</span>
+<span class="token comment" spellcheck="true">//        glBufferData(GL_ARRAY_BUFFER, sizeof(quads_[0]) * (n-start), &amp;quads_[start], GL_DYNAMIC_DRAW);</span>
 
-        <span class="comment">// option 3: orphaning + glMapBuffer</span>
-        glBufferData(GL_ARRAY_BUFFER, <span class="keyword">sizeof</span>(_verts[<span class="number">0</span>]) * _filledVertex, <span class="literal">nullptr</span>, GL_DYNAMIC_DRAW);
-        <span class="keyword">void</span> *buf = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-        <span class="built_in">memcpy</span>(buf, _verts, <span class="keyword">sizeof</span>(_verts[<span class="number">0</span>])* _filledVertex);
-        glUnmapBuffer(GL_ARRAY_BUFFER);
+        <span class="token comment" spellcheck="true">// option 3: orphaning + glMapBuffer</span>
+        <span class="token function">glBufferData</span><span class="token punctuation">(</span>GL_ARRAY_BUFFER<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>_verts<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">*</span> _filledVertex<span class="token punctuation">,</span> <span class="token keyword">nullptr</span><span class="token punctuation">,</span> GL_DYNAMIC_DRAW<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">void</span> <span class="token operator">*</span>buf <span class="token operator">=</span> <span class="token function">glMapBuffer</span><span class="token punctuation">(</span>GL_ARRAY_BUFFER<span class="token punctuation">,</span> GL_WRITE_ONLY<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">memcpy</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> _verts<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>_verts<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">*</span> _filledVertex<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">glUnmapBuffer</span><span class="token punctuation">(</span>GL_ARRAY_BUFFER<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        glBindBuffer(GL_ARRAY_BUFFER, <span class="number">0</span>);
+        <span class="token function">glBindBuffer</span><span class="token punctuation">(</span>GL_ARRAY_BUFFER<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _buffersVBO[<span class="number">1</span>]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, <span class="keyword">sizeof</span>(_indices[<span class="number">0</span>]) * _filledIndex, _indices, GL_STATIC_DRAW);
-    }
-    <span class="keyword">else</span>
-    {
-#define kQuadSize <span class="keyword">sizeof</span>(_verts[<span class="number">0</span>])
-        glBindBuffer(GL_ARRAY_BUFFER, _buffersVBO[<span class="number">0</span>]);
+        <span class="token function">glBindBuffer</span><span class="token punctuation">(</span>GL_ELEMENT_ARRAY_BUFFER<span class="token punctuation">,</span> _buffersVBO<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">glBufferData</span><span class="token punctuation">(</span>GL_ELEMENT_ARRAY_BUFFER<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>_indices<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">*</span> _filledIndex<span class="token punctuation">,</span> _indices<span class="token punctuation">,</span> GL_STATIC_DRAW<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">else</span>
+    <span class="token punctuation">{</span>
+<span class="token macro property">#<span class="token directive keyword">define</span> kQuadSize sizeof(_verts[0])</span>
+        <span class="token function">glBindBuffer</span><span class="token punctuation">(</span>GL_ARRAY_BUFFER<span class="token punctuation">,</span> _buffersVBO<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        glBufferData(GL_ARRAY_BUFFER, <span class="keyword">sizeof</span>(_verts[<span class="number">0</span>]) * _filledVertex , _verts, GL_DYNAMIC_DRAW);
+        <span class="token function">glBufferData</span><span class="token punctuation">(</span>GL_ARRAY_BUFFER<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>_verts<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">*</span> _filledVertex <span class="token punctuation">,</span> _verts<span class="token punctuation">,</span> GL_DYNAMIC_DRAW<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        GL::enableVertexAttribs(GL::VERTEX_ATTRIB_FLAG_POS_COLOR_TEX);
+        GL<span class="token operator">::</span><span class="token function">enableVertexAttribs</span><span class="token punctuation">(</span>GL<span class="token operator">::</span>VERTEX_ATTRIB_FLAG_POS_COLOR_TEX<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        <span class="comment">// vertices</span>
-        glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, <span class="number">3</span>, GL_FLOAT, GL_FALSE, kQuadSize, (GLvoid*) offsetof(V3F_C4B_T2F, vertices));
+        <span class="token comment" spellcheck="true">// vertices</span>
+        <span class="token function">glVertexAttribPointer</span><span class="token punctuation">(</span>GLProgram<span class="token operator">::</span>VERTEX_ATTRIB_POSITION<span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> GL_FLOAT<span class="token punctuation">,</span> GL_FALSE<span class="token punctuation">,</span> kQuadSize<span class="token punctuation">,</span> <span class="token punctuation">(</span>GLvoid<span class="token operator">*</span><span class="token punctuation">)</span> <span class="token function">offsetof</span><span class="token punctuation">(</span>V3F_C4B_T2F<span class="token punctuation">,</span> vertices<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        <span class="comment">// colors</span>
-        glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_COLOR, <span class="number">4</span>, GL_UNSIGNED_BYTE, GL_TRUE, kQuadSize, (GLvoid*) offsetof(V3F_C4B_T2F, colors));
+        <span class="token comment" spellcheck="true">// colors</span>
+        <span class="token function">glVertexAttribPointer</span><span class="token punctuation">(</span>GLProgram<span class="token operator">::</span>VERTEX_ATTRIB_COLOR<span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> GL_UNSIGNED_BYTE<span class="token punctuation">,</span> GL_TRUE<span class="token punctuation">,</span> kQuadSize<span class="token punctuation">,</span> <span class="token punctuation">(</span>GLvoid<span class="token operator">*</span><span class="token punctuation">)</span> <span class="token function">offsetof</span><span class="token punctuation">(</span>V3F_C4B_T2F<span class="token punctuation">,</span> colors<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        <span class="comment">// tex coords</span>
-        glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_TEX_COORD, <span class="number">2</span>, GL_FLOAT, GL_FALSE, kQuadSize, (GLvoid*) offsetof(V3F_C4B_T2F, texCoords));
+        <span class="token comment" spellcheck="true">// tex coords</span>
+        <span class="token function">glVertexAttribPointer</span><span class="token punctuation">(</span>GLProgram<span class="token operator">::</span>VERTEX_ATTRIB_TEX_COORD<span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> GL_FLOAT<span class="token punctuation">,</span> GL_FALSE<span class="token punctuation">,</span> kQuadSize<span class="token punctuation">,</span> <span class="token punctuation">(</span>GLvoid<span class="token operator">*</span><span class="token punctuation">)</span> <span class="token function">offsetof</span><span class="token punctuation">(</span>V3F_C4B_T2F<span class="token punctuation">,</span> texCoords<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _buffersVBO[<span class="number">1</span>]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, <span class="keyword">sizeof</span>(_indices[<span class="number">0</span>]) * _filledIndex, _indices, GL_STATIC_DRAW);
-    }
+        <span class="token function">glBindBuffer</span><span class="token punctuation">(</span>GL_ELEMENT_ARRAY_BUFFER<span class="token punctuation">,</span> _buffersVBO<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">glBufferData</span><span class="token punctuation">(</span>GL_ELEMENT_ARRAY_BUFFER<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>_indices<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">*</span> _filledIndex<span class="token punctuation">,</span> _indices<span class="token punctuation">,</span> GL_STATIC_DRAW<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
 
-    <span class="comment">//Start drawing verties in batch</span>
-    <span class="keyword">for</span>(<span class="keyword">const</span> <span class="keyword">auto</span>&amp; cmd : _batchedCommands)
-    {
-        <span class="keyword">auto</span> newMaterialID = cmd-&gt;getMaterialID();
-        <span class="keyword">if</span>(_lastMaterialID != newMaterialID || newMaterialID == MATERIAL_ID_DO_NOT_BATCH)
-        {
-            <span class="comment">//Draw quads</span>
-            <span class="keyword">if</span>(indexToDraw &gt; <span class="number">0</span>)
-            {
-                glDrawElements(GL_TRIANGLES, (GLsizei) indexToDraw, GL_UNSIGNED_SHORT, (GLvoid*) (startIndex*<span class="keyword">sizeof</span>(_indices[<span class="number">0</span>])) );
-                _drawnBatches++;
-                _drawnVertices += indexToDraw;
+    <span class="token comment" spellcheck="true">//Start drawing verties in batch</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> cmd <span class="token operator">:</span> _batchedCommands<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token keyword">auto</span> newMaterialID <span class="token operator">=</span> cmd<span class="token operator">-</span><span class="token operator">></span><span class="token function">getMaterialID</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>_lastMaterialID <span class="token operator">!=</span> newMaterialID <span class="token operator">||</span> newMaterialID <span class="token operator">==</span> MATERIAL_ID_DO_NOT_BATCH<span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token comment" spellcheck="true">//Draw quads</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>indexToDraw <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span>
+            <span class="token punctuation">{</span>
+                <span class="token function">glDrawElements</span><span class="token punctuation">(</span>GL_TRIANGLES<span class="token punctuation">,</span> <span class="token punctuation">(</span>GLsizei<span class="token punctuation">)</span> indexToDraw<span class="token punctuation">,</span> GL_UNSIGNED_SHORT<span class="token punctuation">,</span> <span class="token punctuation">(</span>GLvoid<span class="token operator">*</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>startIndex<span class="token operator">*</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>_indices<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">)</span><span class="token punctuation">;</span>
+                _drawnBatches<span class="token operator">++</span><span class="token punctuation">;</span>
+                _drawnVertices <span class="token operator">+</span><span class="token operator">=</span> indexToDraw<span class="token punctuation">;</span>
 
-                startIndex += indexToDraw;
-                indexToDraw = <span class="number">0</span>;
-            }
+                startIndex <span class="token operator">+</span><span class="token operator">=</span> indexToDraw<span class="token punctuation">;</span>
+                indexToDraw <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
 
-            <span class="comment">//Use new material</span>
-            cmd-&gt;useMaterial();
-            _lastMaterialID = newMaterialID;
-        }
+            <span class="token comment" spellcheck="true">//Use new material</span>
+            cmd<span class="token operator">-</span><span class="token operator">></span><span class="token function">useMaterial</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            _lastMaterialID <span class="token operator">=</span> newMaterialID<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
 
-        indexToDraw += cmd-&gt;getIndexCount();
-    }
+        indexToDraw <span class="token operator">+</span><span class="token operator">=</span> cmd<span class="token operator">-</span><span class="token operator">></span><span class="token function">getIndexCount</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
 
-    <span class="comment">//Draw any remaining triangles</span>
-    <span class="keyword">if</span>(indexToDraw &gt; <span class="number">0</span>)
-    {
-        glDrawElements(GL_TRIANGLES, (GLsizei) indexToDraw, GL_UNSIGNED_SHORT, (GLvoid*) (startIndex*<span class="keyword">sizeof</span>(_indices[<span class="number">0</span>])) );
-        _drawnBatches++;
-        _drawnVertices += indexToDraw;
-    }
+    <span class="token comment" spellcheck="true">//Draw any remaining triangles</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>indexToDraw <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token function">glDrawElements</span><span class="token punctuation">(</span>GL_TRIANGLES<span class="token punctuation">,</span> <span class="token punctuation">(</span>GLsizei<span class="token punctuation">)</span> indexToDraw<span class="token punctuation">,</span> GL_UNSIGNED_SHORT<span class="token punctuation">,</span> <span class="token punctuation">(</span>GLvoid<span class="token operator">*</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>startIndex<span class="token operator">*</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>_indices<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">)</span><span class="token punctuation">;</span>
+        _drawnBatches<span class="token operator">++</span><span class="token punctuation">;</span>
+        _drawnVertices <span class="token operator">+</span><span class="token operator">=</span> indexToDraw<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
 
-    <span class="keyword">if</span> (Configuration::getInstance()-&gt;supportsShareableVAO())
-    {
-        <span class="comment">//Unbind VAO</span>
-        GL::bindVAO(<span class="number">0</span>);
-    }
-    <span class="keyword">else</span>
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, <span class="number">0</span>);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, <span class="number">0</span>);
-    }
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>Configuration<span class="token operator">::</span><span class="token function">getInstance</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">supportsShareableVAO</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token comment" spellcheck="true">//Unbind VAO</span>
+        GL<span class="token operator">::</span><span class="token function">bindVAO</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">else</span>
+    <span class="token punctuation">{</span>
+        <span class="token function">glBindBuffer</span><span class="token punctuation">(</span>GL_ARRAY_BUFFER<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">glBindBuffer</span><span class="token punctuation">(</span>GL_ELEMENT_ARRAY_BUFFER<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
 
-    _batchedCommands.clear();
-    _filledVertex = <span class="number">0</span>;
-    _filledIndex = <span class="number">0</span>;
-}
-</code></pre>
+    _batchedCommands<span class="token punctuation">.</span><span class="token function">clear</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    _filledVertex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    _filledIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>这里做了三步处理：  </p>
 <ol>
 <li>将顶点、颜色、纹理等数据缓存到GPU  </li>
@@ -581,49 +582,49 @@ visit(renderer, transform, <span class="number">0</span>);
 <li>绘制没有被批绘制的剩余三角形  </li>
 </ol>
 <p>比较值得提及是第2点，cocos2d在这里做了一个自动批绘制的功能，即如下这段代码：  </p>
-<pre><code class="c++"><span class="comment">//Start drawing verties in batch</span>
-<span class="keyword">for</span>(<span class="keyword">const</span> <span class="keyword">auto</span>&amp; cmd : _batchedCommands)
-{
-    <span class="keyword">auto</span> newMaterialID = cmd-&gt;getMaterialID();
-    <span class="keyword">if</span>(_lastMaterialID != newMaterialID || newMaterialID == MATERIAL_ID_DO_NOT_BATCH)
-    {
-        <span class="comment">//Draw quads</span>
-        <span class="keyword">if</span>(indexToDraw &gt; <span class="number">0</span>)
-        {
-            glDrawElements(GL_TRIANGLES, (GLsizei) indexToDraw, GL_UNSIGNED_SHORT, (GLvoid*) (startIndex*<span class="keyword">sizeof</span>(_indices[<span class="number">0</span>])) );
-            _drawnBatches++;
-            _drawnVertices += indexToDraw;
+<pre class="line-numbers language-cpp"><code class="language-cpp">    <span class="token comment" spellcheck="true">//Start drawing verties in batch</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> cmd <span class="token operator">:</span> _batchedCommands<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token keyword">auto</span> newMaterialID <span class="token operator">=</span> cmd<span class="token operator">-</span><span class="token operator">></span><span class="token function">getMaterialID</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>_lastMaterialID <span class="token operator">!=</span> newMaterialID <span class="token operator">||</span> newMaterialID <span class="token operator">==</span> MATERIAL_ID_DO_NOT_BATCH<span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token comment" spellcheck="true">//Draw quads</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>indexToDraw <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span>
+            <span class="token punctuation">{</span>
+                <span class="token function">glDrawElements</span><span class="token punctuation">(</span>GL_TRIANGLES<span class="token punctuation">,</span> <span class="token punctuation">(</span>GLsizei<span class="token punctuation">)</span> indexToDraw<span class="token punctuation">,</span> GL_UNSIGNED_SHORT<span class="token punctuation">,</span> <span class="token punctuation">(</span>GLvoid<span class="token operator">*</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>startIndex<span class="token operator">*</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>_indices<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">)</span><span class="token punctuation">;</span>
+                _drawnBatches<span class="token operator">++</span><span class="token punctuation">;</span>
+                _drawnVertices <span class="token operator">+</span><span class="token operator">=</span> indexToDraw<span class="token punctuation">;</span>
 
-            startIndex += indexToDraw;
-            indexToDraw = <span class="number">0</span>;
-        }
+                startIndex <span class="token operator">+</span><span class="token operator">=</span> indexToDraw<span class="token punctuation">;</span>
+                indexToDraw <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
 
-        <span class="comment">//Use new material</span>
-        cmd-&gt;useMaterial();
-        _lastMaterialID = newMaterialID;
-    }
+            <span class="token comment" spellcheck="true">//Use new material</span>
+            cmd<span class="token operator">-</span><span class="token operator">></span><span class="token function">useMaterial</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            _lastMaterialID <span class="token operator">=</span> newMaterialID<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
 
-    indexToDraw += cmd-&gt;getIndexCount();
-}
-</code></pre>
+        indexToDraw <span class="token operator">+</span><span class="token operator">=</span> cmd<span class="token operator">-</span><span class="token operator">></span><span class="token function">getIndexCount</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>如果上一条绘制命令所使用的materialID与当前的相同，先不做处理，直到materialID不同的绘制命令出现，则将之前的命令统一绘制。<br>其原理是将使用同一纹理、同一着色器、同一混合方程等gl参数的命令集中到一起来绘制，这样可以减少glDraw的调用次数，提升性能。  </p>
 <p>至于materialID是什么，在TrianglesCommand里面可以看到，其生成的方法为：  </p>
-<pre><code class="c++"><span class="keyword">void</span> TrianglesCommand::generateMaterialID()
-{
+<pre class="line-numbers language-cpp"><code class="language-cpp"><span class="token keyword">void</span> TrianglesCommand<span class="token operator">::</span><span class="token function">generateMaterialID</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
 
-    <span class="keyword">if</span>(_glProgramState-&gt;getUniformCount() &gt; <span class="number">0</span>)
-    {
-        _materialID = Renderer::MATERIAL_ID_DO_NOT_BATCH;
-    }
-    <span class="keyword">else</span>
-    {
-        <span class="keyword">int</span> glProgram = (<span class="keyword">int</span>)_glProgramState-&gt;getGLProgram()-&gt;getProgram();
-        <span class="keyword">int</span> intArray[<span class="number">4</span>] = { glProgram, (<span class="keyword">int</span>)_textureID, (<span class="keyword">int</span>)_blendType.src, (<span class="keyword">int</span>)_blendType.dst};
+    <span class="token keyword">if</span><span class="token punctuation">(</span>_glProgramState<span class="token operator">-</span><span class="token operator">></span><span class="token function">getUniformCount</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        _materialID <span class="token operator">=</span> Renderer<span class="token operator">::</span>MATERIAL_ID_DO_NOT_BATCH<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">else</span>
+    <span class="token punctuation">{</span>
+        <span class="token keyword">int</span> glProgram <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span>_glProgramState<span class="token operator">-</span><span class="token operator">></span><span class="token function">getGLProgram</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">getProgram</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> intArray<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{</span> glProgram<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span>_textureID<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span>_blendType<span class="token punctuation">.</span>src<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span>_blendType<span class="token punctuation">.</span>dst<span class="token punctuation">}</span><span class="token punctuation">;</span>
 
-        _materialID = XXH32((<span class="keyword">const</span> <span class="keyword">void</span>*)intArray, <span class="keyword">sizeof</span>(intArray), <span class="number">0</span>);
-    }
-}
-</code></pre>
+        _materialID <span class="token operator">=</span> <span class="token function">XXH32</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span>intArray<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>intArray<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>当此ui元素使用了非默认着色器时，其materialID会被设置为Renderer::MATERIAL_ID_DO_NOT_BATCH，将无法参与自动批绘制。<br>如果采用默认处理，则会通过其使用的着色器、纹理以及混合方程来计算一个hash值，materialID就是这个hash值。就是说，判断两个ui元素能否参与自动批绘制，只需要判断materialID是否相同，如果相同，则说明二者的gl参数一致，可以在同一次glDraw里面完成绘制。<br>不过自动批绘制只能将相邻的RenderCommand进行合并，所以写程序的时候应该考虑到这一点来进行优化。</p>
 <h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>cocos2d绘制的大致流程就是以上，即：<br>每次游戏循环，对ui树进行遍历时，cocos2d不会立即进行绘制，而是让每一个ui元素提交一个绘制命令（RenderCommand）。<br>遍历完一次ui树后，会生成一个绘制命令队列（RenderQueue），绘制器（Renderer）会先对绘制队列进行排序，然后开始绘制。<br>绘制过程中采用了自动批绘制的技术对绘制进行优化，即合并使用同一着色器、纹理以及混合方程的绘制命令，以达到性能优化的目的。</p>
 
@@ -850,15 +851,15 @@ visit(renderer, transform, <span class="number">0</span>);
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">unity</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">ui</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
               </li>
             
             <div class="clearfix"></div>
