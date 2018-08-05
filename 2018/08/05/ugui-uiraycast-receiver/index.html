@@ -6,14 +6,20 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>KJTang&#39;s Blog</title>
+  <title>UI点击穿透组件 | KJTang&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="KJTang's Blog">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="功能概述某些时候，我们想要实现这样一种功能：点击屏幕上的一块区域，该区域触发一个事件，同时位于该区域以下的UI组件依然能够接收的到点击事件。比如在游戏的背包系统中，点击某个道具会显示道具的信息 Tips ，在 Tips 存在的时候，点击第二个道具，打开第二个道具的 Tips ，同时关闭第一个道具的 Tips 。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UI点击穿透组件">
+<meta property="og:url" content="http://yoursite.com/2018/08/05/ugui-uiraycast-receiver/index.html">
 <meta property="og:site_name" content="KJTang's Blog">
+<meta property="og:description" content="功能概述某些时候，我们想要实现这样一种功能：点击屏幕上的一块区域，该区域触发一个事件，同时位于该区域以下的UI组件依然能够接收的到点击事件。比如在游戏的背包系统中，点击某个道具会显示道具的信息 Tips ，在 Tips 存在的时候，点击第二个道具，打开第二个道具的 Tips ，同时关闭第一个道具的 Tips 。">
+<meta property="og:image" content="http://yoursite.com/images/ugui/backpack.png">
+<meta property="og:updated_time" content="2018-08-05T05:27:25.853Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="KJTang's Blog">
+<meta name="twitter:title" content="UI点击穿透组件">
+<meta name="twitter:description" content="功能概述某些时候，我们想要实现这样一种功能：点击屏幕上的一块区域，该区域触发一个事件，同时位于该区域以下的UI组件依然能够接收的到点击事件。比如在游戏的背包系统中，点击某个道具会显示道具的信息 Tips ，在 Tips 存在的时候，点击第二个道具，打开第二个道具的 Tips ，同时关闭第一个道具的 Tips 。">
+<meta name="twitter:image" content="http://yoursite.com/images/ugui/backpack.png">
   
     <link rel="alternative" href="/atom.xml" title="KJTang&#39;s Blog" type="application/atom+xml">
   
@@ -139,16 +145,14 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-    <article id="post-ugui-uiraycast-receiver" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+            <article id="post-ugui-uiraycast-receiver" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/08/05/ugui-uiraycast-receiver/">UI点击穿透组件</a>
+    <h1 class="article-title" itemprop="name">
+      UI点击穿透组件
     </h1>
   
 
@@ -162,9 +166,37 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h3 id="功能概述"><a href="#功能概述" class="headerlink" title="功能概述"></a>功能概述</h3><p>某些时候，我们想要实现这样一种功能：<br>点击屏幕上的一块区域，该区域触发一个事件，同时位于该区域以下的UI组件依然能够接收的到点击事件。<br>比如在游戏的背包系统中，点击某个道具会显示道具的信息 Tips ，在 Tips 存在的时候，点击第二个道具，打开第二个道具的 Tips ，同时关闭第一个道具的 Tips 。  </p>
-        
-          <a class="article-more-a" href="/2018/08/05/ugui-uiraycast-receiver/#more">more >></a>
-        
+<a id="more"></a>
+<p><img src="/images/ugui/backpack.png" alt="背包"><br>（图片来自网络）</p>
+<p>如果采用 UGUI 框架来实现的话，我们知道一个 UI 组件想要接收点击事件，需要勾选其 “Raycast Target” 选项，但一旦勾选这个选项，位于其下的 UI 组件就无法接收到点击事件，故需要通过其它手段来实现这样的功能。</p>
+<h3 id="实现思路"><a href="#实现思路" class="headerlink" title="实现思路"></a>实现思路</h3><h4 id="特殊逻辑实现"><a href="#特殊逻辑实现" class="headerlink" title="特殊逻辑实现"></a>特殊逻辑实现</h4><p>对于上面提到的背包 Tips 需求，其实可以直接在逻辑代码里面做处理来实现：  </p>
+<ol>
+<li>首先取消 Tips 的 “Raycast Target” ，避免其影响下一层的事件接收  </li>
+<li>然后在每个道具的事件处理中都先关闭上一条 Tips ，再打开自己的 Tips   </li>
+</ol>
+<p>但此时出现了新的问题，比如背包系统中经常会有多种类型的背包，通过 Tab 来切换不同的类型，如果 Tips 无法接收事件，那意味着在这些 Tab 的事件处理中也要加上关闭 Tips 的处理，否则在切换类型时 Tips 无法关闭。<br>在这样的处理下，原本的逻辑就变得复杂了，如果还有其它组件有 Tab 类似的功能，意味着每一个这样的组件都要加相关的处理，缺少通用性。  </p>
+<h4 id="使用-EventHandler"><a href="#使用-EventHandler" class="headerlink" title="使用 EventHandler"></a>使用 EventHandler</h4><p>参考博客 <a href="http://www.manew.com/thread-94130-1-1.html" target="_blank" rel="external">《 Unity3D 之将 UI 的点击事件渗透下去》</a> 的内容，通过继承 EventHandler 的方法，让当前脚本接收到事件的同时将事件再次传递下去：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line">using UnityEngine;</div><div class="line">using System.Collections;</div><div class="line">using UnityEngine.EventSystems;</div><div class="line">using UnityEngine.UI;</div><div class="line">using System.Collections.Generic;</div><div class="line"></div><div class="line">public class Test : MonoBehaviour, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler</div><div class="line">&#123; </div><div class="line">    // 监听按下</div><div class="line">    public void OnPointerDown(PointerEventData eventData)</div><div class="line">    &#123;</div><div class="line">        PassEvent(eventData, ExecuteEvents.pointerDownHandler);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // 监听抬起</div><div class="line">    public void OnPointerUp(PointerEventData eventData)</div><div class="line">    &#123;</div><div class="line">        PassEvent(eventData, ExecuteEvents.pointerUpHandler);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // 监听点击</div><div class="line">    public void OnPointerClick(PointerEventData eventData)</div><div class="line">    &#123;</div><div class="line">        PassEvent(eventData, ExecuteEvents.submitHandler);</div><div class="line">        PassEvent(eventData, ExecuteEvents.pointerClickHandler);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // 把事件透下去</div><div class="line">    public void  PassEvent&lt;T&gt;(PointerEventData data, ExecuteEvents.EventFunction&lt;T&gt; function)</div><div class="line">        where T : IEventSystemHandler</div><div class="line">    &#123;</div><div class="line">        List&lt;RaycastResult&gt; results = new List&lt;RaycastResult&gt;();</div><div class="line">        EventSystem.current.RaycastAll(data, results); </div><div class="line">        GameObject current = data.pointerCurrentRaycast.gameObject ;</div><div class="line">        for(int i = 0; i &lt; results.Count; ++i)</div><div class="line">        &#123;</div><div class="line">            if(current != results[i].gameObject)</div><div class="line">            &#123;</div><div class="line">                ExecuteEvents.Execute(results[i].gameObject, data,function);</div><div class="line">                // RaycastAll后ugui会自己排序，如果你只想响应透下去的最近的一个响应，</div><div class="line">                // 这里ExecuteEvents.Execute后直接break就行。</div><div class="line">                // break;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125; </div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>但这样存在的问题是，如果被遮挡的组件除去点击事件还有其它类型的事件要接收（例如拖拽等），意味着要再给其它类型的事件做处理，并且很多事件不仅仅是直接将事件继续传递就可以了的，其中的逻辑没有处理好的话非常容易出现问题，故这套方案的局限性比较大。</p>
+<h4 id="利用-EventSystem-RaycastAll"><a href="#利用-EventSystem-RaycastAll" class="headerlink" title="利用 EventSystem.RaycastAll"></a>利用 EventSystem.RaycastAll</h4><p>通过分析 UGUI 的源码（ UGUI 为开源代码：<a href="https://bitbucket.org/Unity-Technologies/ui" target="_blank" rel="external">UGUI Source Code</a>），可以知道点击事件是由 EventSystem 来驱动的。  </p>
+<p>在 EventSystem 的 Update 中，对当前的 InputMoudle 进行了更新，默认的InputMoudle（ PC 上为 StandaloneInputMoudle ，移动端为 TouchInputMoudle ，都继承自 PointerInputModule ）在每次更新的时候，会利用 EventSystem.RaycastAll 接口来获取当前点击点能够触发事件的所有 UI 组件，并从中找出排在最前面的一个：<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// PointerInputModule.cs</span></div><div class="line"><span class="function"><span class="keyword">protected</span> PointerEventData <span class="title">GetTouchPointerEventData</span>(<span class="params">Touch input, <span class="keyword">out</span> <span class="keyword">bool</span> pressed, <span class="keyword">out</span> <span class="keyword">bool</span> released</span>)</span></div><div class="line">&#123;</div><div class="line">    <span class="comment">// 初始化 PointerData </span></div><div class="line">    PointerEventData pointerData;</div><div class="line">    <span class="keyword">var</span> created = GetPointerData(input.fingerId, <span class="keyword">out</span> pointerData, <span class="literal">true</span>);</div><div class="line">    pointerData.Reset();</div><div class="line">    pressed = created || (input.phase == TouchPhase.Began);</div><div class="line">    released = (input.phase == TouchPhase.Canceled) || (input.phase == TouchPhase.Ended);</div><div class="line">    <span class="keyword">if</span> (created)</div><div class="line">        pointerData.position = input.position;</div><div class="line">    <span class="keyword">if</span> (pressed)</div><div class="line">        pointerData.delta = Vector2.zero;</div><div class="line">    <span class="keyword">else</span></div><div class="line">        pointerData.delta = input.position - pointerData.position;</div><div class="line">    pointerData.position = input.position;</div><div class="line">    pointerData.button = PointerEventData.InputButton.Left;</div><div class="line"></div><div class="line">    <span class="comment">// 获取所有能接收该 Point 事件的 UI 组件</span></div><div class="line">    eventSystem.RaycastAll(pointerData, m_RaycastResultCache);</div><div class="line"></div><div class="line">    <span class="comment">// 找出排在最前面的 UI 组件</span></div><div class="line">    <span class="keyword">var</span> raycast = FindFirstRaycast(m_RaycastResultCache);</div><div class="line">    pointerData.pointerCurrentRaycast = raycast;</div><div class="line">    m_RaycastResultCache.Clear();</div><div class="line">    <span class="keyword">return</span> pointerData;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>获取到最前面的 UI 组件后，即可对它进行事件处理。  </p>
+<p>判断一个 UI 组件是否能够被触发事件，是由该组件的 Raycast 接口决定的：EventSystem.RaycastAll 时会对所有能够接收事件的 UI 组件调用其 Raycast 接口，如果该接口返回 True ，说明其处在点击范围内，会加入能够接收事件的 UI 队列中。<br>　<br>知道了这一点，面对我们需要解决的需求时，可以采取的思路是：  </p>
+<ol>
+<li>先开启 “Raycast Target” ，要能够接收点击事件</li>
+<li>如果处在点击范围内，进行记录，但让 Raycast 接口返回 False ，避免隔断其它 UI 组件的事件处理</li>
+<li>如果记录中本 UI 组件处在点击范围内，则手动进行一次 EventSystem.RaycastAll 检测，并判断自身是否是队首的 UI 组件，如果是，则进行事件处理  </li>
+</ol>
+<p>通过上面第二点，可以做到事件穿透，通过第三点，可以做到当前 UI 组件的事件处理。实现了需求。核心代码如下：<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">bool</span> <span class="title">Raycast</span>(<span class="params">Vector2 sp, Camera eventCamera</span>) </span></div><div class="line">&#123;</div><div class="line">    <span class="comment">// 记录是否在点击范围内</span></div><div class="line">    isRaycasted = <span class="keyword">base</span>.Raycast(sp, eventCamera);</div><div class="line">    <span class="keyword">if</span> (isRaycastTesting) </div><div class="line">        <span class="keyword">return</span> isRaycasted;</div><div class="line">    <span class="keyword">else</span></div><div class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Update</span>(<span class="params"></span>) </span></div><div class="line">&#123;</div><div class="line">    <span class="comment">// 如果不需要检测，直接返回，避免不必要的计算</span></div><div class="line">    <span class="keyword">if</span> (!isRaycasted) </div><div class="line">        <span class="keyword">return</span>;</div><div class="line">    isRaycasted = <span class="literal">false</span>;</div><div class="line"></div><div class="line">    <span class="comment">// 获取当前点击点的位置</span></div><div class="line"><span class="meta">#<span class="meta-keyword">if</span> UNITY_EDITOR || UNITY_STANDALONE</span></div><div class="line">    <span class="keyword">if</span> (Input.GetMouseButtonDown(<span class="number">0</span>)) </div><div class="line">    &#123;</div><div class="line">        touchPosition = Input.mousePosition;</div><div class="line"><span class="meta">#<span class="meta-keyword">else</span></span></div><div class="line">    <span class="keyword">if</span> (Input.touchCount &gt; <span class="number">0</span> &amp;&amp; Input.touches[<span class="number">0</span>].phase == TouchPhase.Began)  </div><div class="line">    &#123;</div><div class="line">        touchPosition = Input.touches[<span class="number">0</span>].position;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"></div><div class="line">        <span class="comment">// 手动调用 EventSystem.RaycastAll </span></div><div class="line">        <span class="keyword">var</span> data = <span class="keyword">new</span> PointerEventData(EventSystem.current);</div><div class="line">        data.position = touchPosition;</div><div class="line">        data.delta = Vector2.zero;</div><div class="line">        data.button = PointerEventData.InputButton.Left;</div><div class="line">        <span class="keyword">var</span> results = <span class="keyword">new</span> List&lt;RaycastResult&gt;();</div><div class="line"></div><div class="line">        isRaycastTesting = <span class="literal">true</span>;</div><div class="line">        EventSystem.current.RaycastAll(data, results); </div><div class="line">        isRaycastTesting = <span class="literal">false</span>;</div><div class="line"></div><div class="line">        <span class="comment">// 判断是否是队首 UI </span></div><div class="line">        <span class="keyword">bool</span> isFirstObj = <span class="literal">false</span>;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; results.Count; ++i)</div><div class="line">        &#123;</div><div class="line">            <span class="keyword">if</span> (results[i].gameObject != <span class="literal">null</span>) </div><div class="line">            &#123;</div><div class="line">                isFirstObj = (results[i].gameObject == gameObject);</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 如果是，进行事件处理</span></div><div class="line">        <span class="keyword">if</span> (isFirstObj) </div><div class="line">        &#123;</div><div class="line">            <span class="comment">// do sth.</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="优化方向"><a href="#优化方向" class="headerlink" title="优化方向"></a>优化方向</h3><h4 id="现存缺陷"><a href="#现存缺陷" class="headerlink" title="现存缺陷"></a>现存缺陷</h4><p>虽然以上使用 EventSystem.RaycastAll 手动进行一次检测的方式可以解决目前碰到的问题，但是在性能等方面，其还是存在一些优化点：  </p>
+<ol>
+<li>当前 UI 是否要进行事件处理的判断是在 Update 中做的，虽然不在点击区域之内的时候 Update 会立即返回不进行计算，但是大量的调用还是会存在一定的开销</li>
+<li>每一个挂载脚本的 UI 组件都有可能触发 EventSystem.RaycastAll ，如果某一个区域重叠了大量的 UI 组件，都触发检测的话，可能对性能有较大的影响</li>
+</ol>
+<h4 id="优化思路"><a href="#优化思路" class="headerlink" title="优化思路"></a>优化思路</h4><ol>
+<li>可以添加一个管理器，所有需要进行判断的逻辑放到管理器进行处理，如果有 UI 需要进行检测，就都加入列表中，由管理器进行统一的 EventSystem.RaycastAll 调用，这样一个是可以减少 Update 的调用，另一个也避免了太多的 EventSystem.RaycastAll</li>
+<li>另一方面，通过之前的 UGUI 源码分析可以知道，之所以我们要采取手动进行 EventSystem.RaycastAll 操作来实现需求，是因为默认的 InputMoudle 进行该操作之后只保留了队首的 UI ，导致无法对其后的 UI 进行处理，无法实现穿透功能；故其实我们可以通过实现自己的 InputMoudle 来解决这个问题，在自己实现的 InputMoudle 中保存相关的数据，需要的时候就可以直接进行取用，避免了手动调用的开销</li>
+</ol>
+
       
 
       
@@ -190,18 +222,74 @@
       
 
       
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/08/05/ugui-uiraycast-receiver/">展开全文 >></a>
-        </p>
-      
 
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2018/08/05/ugui-uiraycast-receiver/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
       
       <div class="clearfix"></div>
     </div>
   </div>
 </article>
 
-
+  
+<nav id="article-nav">
+  
+  
+    <a href="/2017/01/18/gamedesign-psychology/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">&quot;游戏心理学&quot;相关笔记</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
 
 
 
@@ -209,144 +297,28 @@
 
 
   
-    <article id="post-gamedesign-psychology" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/01/18/gamedesign-psychology/">&quot;游戏心理学&quot;相关笔记</a>
-    </h1>
-  
-
-        
-        <a href="/2017/01/18/gamedesign-psychology/" class="archive-article-date">
-  	<time datetime="2017-01-18T13:41:31.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-01-18</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="游戏中的心理学"><a href="#游戏中的心理学" class="headerlink" title="游戏中的心理学"></a>游戏中的心理学</h2><h4 id="乐趣原理"><a href="#乐趣原理" class="headerlink" title="乐趣原理"></a>乐趣原理</h4><ul>
-<li>三要素：玩法，规则，奖惩：<br>  例子，对于Pacman这款游戏，其玩法就是玩家可以上下左右移动；规则就是玩家需要吃完地图上的所有豆子，并且尽量躲避鬼魂；奖惩体现在游戏的分数上，如果持续吃豆子或者进入下一关等，玩家的游戏积分会增加，如果玩家被鬼魂吃掉，则会损失生命导致游戏结束。</li>
-</ul>
-        
-          <a class="article-more-a" href="/2017/01/18/gamedesign-psychology/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">gamedesign</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2017/01/18/gamedesign-psychology/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-
-
-
-
-
-
+  <div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="ugui-uiraycast-receiver" data-title="UI点击穿透组件" data-url="http://yoursite.com/2018/08/05/ugui-uiraycast-receiver/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"kjtang"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
 
   
-    <article id="post-cocos2d-lua-binding" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/07/08/cocos2d-lua-binding/">Cocos2d-lua绑定自定义c++类</a>
-    </h1>
-  
-
-        
-        <a href="/2016/07/08/cocos2d-lua-binding/" class="archive-article-date">
-  	<time datetime="2016-07-08T11:41:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-07-08</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>最近在使用cocos2d-lua写一些小游戏，遇到了需要在lua中调用自定义的c++类的情况，于是花了一下午时间来踩这个坑，目前终于成功跑起来了，故在此做一个记录。</p>
-<ul>
-<li><h4 id="lua调用静态c-函数"><a href="#lua调用静态c-函数" class="headerlink" title="lua调用静态c++函数"></a>lua调用静态c++函数</h4>在lua中调用c++有很多中办法，例如可以直接使用lua_register来注册一个静态函数。如下：  </li>
-</ul>
-        
-          <a class="article-more-a" href="/2016/07/08/cocos2d-lua-binding/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">cocos2d</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2016/07/08/cocos2d-lua-binding/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
 
 
-
-
-
-
-
-
-  
-  
-    <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
-    </nav>
-  
 
 
           </div>
@@ -368,8 +340,8 @@
     <script>
 	var yiliaConfig = {
 		mathjax: false,
-		isHome: true,
-		isPost: false,
+		isHome: false,
+		isPost: true,
 		isArchive: false,
 		isTag: false,
 		isCategory: false,
