@@ -6,14 +6,20 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Archives: 2016/7 | KJTang&#39;s Blog</title>
+  <title>Sublime插件开发：在入门前放弃 | KJTang&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="KJTang's Blog">
-<meta property="og:url" content="http://yoursite.com/archives/2016/07/index.html">
+  <meta name="description" content="简介">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sublime插件开发：在入门前放弃">
+<meta property="og:url" content="http://yoursite.com/2018/10/15/subl-simple-search/index.html">
 <meta property="og:site_name" content="KJTang's Blog">
+<meta property="og:description" content="简介">
+<meta property="og:image" content="http://yoursite.com/images/subl/simple-search/example.gif">
+<meta property="og:updated_time" content="2018-11-17T12:37:18.888Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="KJTang's Blog">
+<meta name="twitter:title" content="Sublime插件开发：在入门前放弃">
+<meta name="twitter:description" content="简介">
+<meta name="twitter:image" content="http://yoursite.com/images/subl/simple-search/example.gif">
   
     <link rel="alternative" href="/atom.xml" title="KJTang&#39;s Blog" type="application/atom+xml">
   
@@ -140,60 +146,165 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-subl-simple-search" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2016" class="archive-year">2016</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2016/07/08/cocos2d-lua-binding/" class="archive-article-date">
-  	<time datetime="2016-07-08T11:41:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-07-08</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/07/08/cocos2d-lua-binding/">Cocos2d-lua绑定自定义c++类</a>
+    <h1 class="article-title" itemprop="name">
+      Sublime插件开发：在入门前放弃
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/2018/10/15/subl-simple-search/" class="archive-article-date">
+  	<time datetime="2018-10-14T16:00:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-10-15</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><a id="more"></a>
+<h3 id="How-to-Run"><a href="#How-to-Run" class="headerlink" title="How-to-Run"></a>How-to-Run</h3><p>首先是建立插件能够运行的环境，找到 sublime 插件的目录：</p>
+<pre><code>// mac
+/Users/&quot;User Name&quot;/Library/Application Support/Sublime Text 3/Packages/
+
+// windows
+C:\Users\&quot;User Name&quot;\AppData\Roaming\Sublime Text 3\Packages\
+</code></pre><p>在其中建立测试用文件夹，例如：PluginTest，接着通过 sublime 菜单创建示例 plugin 文件保存到测试文件夹：<br>Sublime -&gt; Tools -&gt; Developer -&gt; New Plugin</p>
+<p>文件内容为：</p>
+<pre class="line-numbers language-python"><code class="language-python"><span class="token keyword">import</span> sublime
+<span class="token keyword">import</span> sublime_plugin
+
+<span class="token keyword">class</span> <span class="token class-name">ExampleCommand</span><span class="token punctuation">(</span>sublime_plugin<span class="token punctuation">.</span>TextCommand<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">run</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> edit<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>view<span class="token punctuation">.</span>insert<span class="token punctuation">(</span>edit<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token string">"Hello, World!"</span><span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>接下来，通过 ctrl+` 打开 console，输入：</p>
+<pre class="line-numbers language-python"><code class="language-python">view<span class="token punctuation">.</span>run_command<span class="token punctuation">(</span><span class="token string">'example'</span><span class="token punctuation">)</span>        <span class="token comment" spellcheck="true"># 取 ExampleCommand 的前缀 example</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>即可看到该插件的效果：在文件开始处插入 “Hello, World!” :<br><img src="/images/subl/simple-search/example.gif" alt="xxx"></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">cocos2d</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">sublime</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2018/10/15/subl-simple-search/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
   
   
-    </div></section>
+    <a href="/2018/10/15/minigame-dogejump/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">Doge-Jump微信小游戏</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+
+
+
+
+  
+  <div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="subl-simple-search" data-title="Sublime插件开发：在入门前放弃" data-url="http://yoursite.com/2018/10/15/subl-simple-search/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"kjtang"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
   
 
-    
+
 
 
           </div>
@@ -216,8 +327,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
