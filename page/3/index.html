@@ -142,6 +142,75 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-cocos2d-render" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/04/13/cocos2d-render/">Cocos2dx:绘制流程</a>
+    </h1>
+  
+
+        
+        <a href="/2016/04/13/cocos2d-render/" class="archive-article-date">
+  	<time datetime="2016-04-13T13:52:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-04-13</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="cocos2d绘制流程"><a href="#cocos2d绘制流程" class="headerlink" title="cocos2d绘制流程"></a>cocos2d绘制流程</h3><p>cocos2d进行绘制主要分成了三个步骤：   </p>
+<ol>
+<li>每一个ui元素提交绘制命令(RenderCommand)到绘制队列(RenderQueue)  </li>
+<li>绘制队列对将要绘制的元素进行排序，确定绘制顺序  </li>
+<li>Renderer执行绘制命令进行绘制  </li>
+</ol>
+        
+          <a class="article-more-a" href="/2016/04/13/cocos2d-render/#more">more >></a>
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">cocos2d</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2016/04/13/cocos2d-render/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+
+
+
+
+
+
+
+  
     <article id="post-cocos2d-tilemap02" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -282,77 +351,9 @@
 
 
   
-    <article id="post-cocos2d-physics" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/04/cocos2d-physics/">Cocos2dx:物理引擎碰撞检测</a>
-    </h1>
-  
-
-        
-        <a href="/2016/03/04/cocos2d-physics/" class="archive-article-date">
-  	<time datetime="2016-03-04T10:11:08.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-03-04</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>在cocos2dx中使用物理引擎的时候，对物理世界(PhysicsWorld)中的物体设置好碰撞检测的规则是很常见的需求，对Node调用其getPhysicsBody可以获得它的PhysicsBody，通过setGroup，setCategoryBitmask，setCollisionBitmask，setContactTestBitmask等API可以设置碰撞检测的规则，<br>下面进行一些总结：</p>
-        
-          <a class="article-more-a" href="/2016/03/04/cocos2d-physics/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">cocos2d</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">chipmunk</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2016/03/04/cocos2d-physics/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-
-
-
-
-
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span>
+      <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
     </nav>
   
 
@@ -447,11 +448,15 @@
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">sublime</a>
+                <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
+                <a href="javascript:void(0)" class="js-tag color3">c#</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">sublime</a>
               </li>
              
               <li class="article-tag-list-item">
