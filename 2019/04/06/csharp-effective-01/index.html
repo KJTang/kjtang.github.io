@@ -14,7 +14,7 @@
 <meta property="og:url" content="http://yoursite.com/2019/04/06/csharp-effective-01/index.html">
 <meta property="og:site_name" content="KJTang's Blog">
 <meta property="og:description" content="本系列为阅读《Effective C#》一书所做的笔记，内容基本来自于该书籍与网上相关文档与博客；由于主要起笔记作用，文章只记录了部分书籍中提到的优化要点，一些不常用的、本人暂时无法理解的、已经掌握或自以为已经掌握的内容不再做记录；内容上比较简要，要获取具体的内容需要查阅相关的资料。">
-<meta property="og:updated_time" content="2019-04-06T06:13:47.019Z">
+<meta property="og:updated_time" content="2019-04-10T16:49:12.370Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Effective C# 阅读笔记（一）">
 <meta name="twitter:description" content="本系列为阅读《Effective C#》一书所做的笔记，内容基本来自于该书籍与网上相关文档与博客；由于主要起笔记作用，文章只记录了部分书籍中提到的优化要点，一些不常用的、本人暂时无法理解的、已经掌握或自以为已经掌握的内容不再做记录；内容上比较简要，要获取具体的内容需要查阅相关的资料。">
@@ -273,7 +273,93 @@ MyClass cls <span class="token operator">=</span> obj <span class="token keyword
 
 <span class="token comment" spellcheck="true">// output: convert succ</span>
 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<h2 id="delegate"><a href="#delegate" class="headerlink" title="delegate"></a>delegate</h2><p>TODO</p>
+<h2 id="delegate"><a href="#delegate" class="headerlink" title="delegate"></a>delegate</h2><p><strong> 博客参考：</strong></p>
+<p><a href="https://www.cnblogs.com/JimmyZhang/archive/2007/09/23/903360.html" target="_blank" rel="external">C#中的委托和事件</a></p>
+<p><strong> 示例：</strong></p>
+<pre class="line-numbers language-csharp"><code class="language-csharp"><span class="token keyword">class</span> <span class="token class-name">MainClass</span> <span class="token punctuation">{</span>
+    <span class="token keyword">public</span> <span class="token keyword">delegate</span> <span class="token keyword">void</span> <span class="token function">DelegateTest</span><span class="token punctuation">(</span><span class="token keyword">string</span> str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">Main</span><span class="token punctuation">(</span><span class="token keyword">string</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        DelegateTest test<span class="token punctuation">;</span>
+        test <span class="token operator">=</span> <span class="token punctuation">(</span>str<span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">{</span> Console<span class="token punctuation">.</span><span class="token function">WriteLine</span><span class="token punctuation">(</span><span class="token string">"Hello "</span> <span class="token operator">+</span> str<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">}</span><span class="token punctuation">;</span>
+        <span class="token function">test</span><span class="token punctuation">(</span><span class="token string">"World"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><strong> 注意：</strong><br>delegate 都是多播委托（multicast delegate），即所有目标函数会视为一个整体执行：</p>
+<ul>
+<li>若其中一个函数执行发生错误，后续的函数将不会执行</li>
+<li>若 delegate 定义了返回值，则其返回值为最后一个执行函数的返回值</li>
+</ul>
+<p>如果需要处理异常或者返回值，则需要手动执行 delegate，例如：</p>
+<pre class="line-numbers language-csharp"><code class="language-csharp"><span class="token keyword">class</span> <span class="token class-name">MainClass</span> <span class="token punctuation">{</span>
+    <span class="token keyword">public</span> <span class="token keyword">delegate</span> <span class="token keyword">bool</span> <span class="token function">DelegateTest</span><span class="token punctuation">(</span><span class="token keyword">string</span> str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">Main</span><span class="token punctuation">(</span><span class="token keyword">string</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        DelegateTest test<span class="token punctuation">;</span>
+        test <span class="token operator">=</span> <span class="token punctuation">(</span>str<span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">{</span> 
+            Console<span class="token punctuation">.</span><span class="token function">WriteLine</span><span class="token punctuation">(</span><span class="token string">"Hello "</span> <span class="token operator">+</span> str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token keyword">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+        test <span class="token operator">+</span><span class="token operator">=</span> <span class="token punctuation">(</span>str<span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">{</span> 
+            Console<span class="token punctuation">.</span><span class="token function">WriteLine</span><span class="token punctuation">(</span><span class="token string">"Good Morning "</span> <span class="token operator">+</span> str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token keyword">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+        test <span class="token operator">+</span><span class="token operator">=</span> <span class="token punctuation">(</span>str<span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">{</span> 
+            Console<span class="token punctuation">.</span><span class="token function">WriteLine</span><span class="token punctuation">(</span><span class="token string">"Bye "</span> <span class="token operator">+</span> str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token keyword">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">bool</span> ret <span class="token operator">=</span> <span class="token keyword">true</span><span class="token punctuation">;</span>
+        <span class="token keyword">foreach</span> <span class="token punctuation">(</span>DelegateTest func <span class="token keyword">in</span> test<span class="token punctuation">.</span><span class="token function">GetInvocationList</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            ret <span class="token operator">&amp;</span><span class="token operator">=</span> <span class="token function">func</span><span class="token punctuation">(</span><span class="token string">"World"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>ret<span class="token punctuation">)</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><strong> delegate &amp; event：</strong></p>
+<p>开发中经常使用到事件系统，用 delegate 可以比较简单地完成需求，但存在的问题有：</p>
+<ul>
+<li>delegate 不能为 private，否则外部无法访问</li>
+<li>delegate 若为 public，则容易被外部修改</li>
+</ul>
+<p>故提供了 event 关键字，用于修饰 delegate 的声明，其修饰的 delegate 变量会默认为 private （不管声明为 public 还是其它），但外部能够通过 += 和 -= 两种操作符来实现事件的监听与去监听：</p>
+<pre class="line-numbers language-csharp"><code class="language-csharp"><span class="token keyword">class</span> <span class="token class-name">SomeClass</span> <span class="token punctuation">{</span>
+    <span class="token keyword">public</span> <span class="token keyword">delegate</span> <span class="token keyword">bool</span> <span class="token function">DelegateTest</span><span class="token punctuation">(</span><span class="token keyword">string</span> str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">public</span> <span class="token keyword">event</span> DelegateTest testEvt<span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">SomeFunc</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">testEvt</span><span class="token punctuation">(</span><span class="token string">"World"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">class</span> <span class="token class-name">MainClass</span> <span class="token punctuation">{</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">Main</span><span class="token punctuation">(</span><span class="token keyword">string</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        SomeClass cls <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">SomeClass</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        cls<span class="token punctuation">.</span>testEvt <span class="token operator">+</span><span class="token operator">=</span> <span class="token punctuation">(</span>str<span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">{</span>
+            Console<span class="token punctuation">.</span><span class="token function">WriteLine</span><span class="token punctuation">(</span><span class="token string">"Hello "</span> <span class="token operator">+</span> str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token keyword">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+        cls<span class="token punctuation">.</span>testEvt <span class="token operator">+</span><span class="token operator">=</span> <span class="token punctuation">(</span>str<span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">{</span>
+            Console<span class="token punctuation">.</span><span class="token function">WriteLine</span><span class="token punctuation">(</span><span class="token string">"Good Morning "</span> <span class="token operator">+</span> str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token keyword">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+        cls<span class="token punctuation">.</span>testEvt <span class="token operator">+</span><span class="token operator">=</span> <span class="token punctuation">(</span>str<span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">{</span>
+            Console<span class="token punctuation">.</span><span class="token function">WriteLine</span><span class="token punctuation">(</span><span class="token string">"Bye "</span> <span class="token operator">+</span> str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token keyword">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+        cls<span class="token punctuation">.</span><span class="token function">SomeFunc</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <h2 id="box-amp-unbox"><a href="#box-amp-unbox" class="headerlink" title="box &amp; unbox"></a>box &amp; unbox</h2><p><strong> 定义： </strong></p>
 <ul>
 <li>装箱：值类型放入非类型化的引用对象中（object）</li>
@@ -532,11 +618,11 @@ d<span class="token punctuation">.</span><span class="token function">Func</span
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
+                <a href="javascript:void(0)" class="js-tag color3">c#</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">c#</a>
+                <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
               </li>
              
               <li class="article-tag-list-item">
