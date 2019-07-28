@@ -6,14 +6,18 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>KJTang&#39;s Blog</title>
+  <title>Effective C# 阅读笔记（二） | KJTang&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="KJTang's Blog">
-<meta property="og:url" content="http://yoursite.com/page/3/index.html">
+  <meta name="description" content="本系列为阅读《Effective C#》一书所做的笔记，内容基本来自于该书籍与网上相关文档与博客；由于主要起笔记作用，文章只记录了部分书籍中提到的优化要点，一些不常用的、本人暂时无法理解的、已经掌握或自以为已经掌握的内容不再做记录；内容上比较简要，要获取具体的内容需要查阅相关的资料。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Effective C# 阅读笔记（二）">
+<meta property="og:url" content="http://yoursite.com/2019/04/07/csharp-effective-02/index.html">
 <meta property="og:site_name" content="KJTang's Blog">
+<meta property="og:description" content="本系列为阅读《Effective C#》一书所做的笔记，内容基本来自于该书籍与网上相关文档与博客；由于主要起笔记作用，文章只记录了部分书籍中提到的优化要点，一些不常用的、本人暂时无法理解的、已经掌握或自以为已经掌握的内容不再做记录；内容上比较简要，要获取具体的内容需要查阅相关的资料。">
+<meta property="og:updated_time" content="2019-07-28T13:26:16.361Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="KJTang's Blog">
+<meta name="twitter:title" content="Effective C# 阅读笔记（二）">
+<meta name="twitter:description" content="本系列为阅读《Effective C#》一书所做的笔记，内容基本来自于该书籍与网上相关文档与博客；由于主要起笔记作用，文章只记录了部分书籍中提到的优化要点，一些不常用的、本人暂时无法理解的、已经掌握或自以为已经掌握的内容不再做记录；内容上比较简要，要获取具体的内容需要查阅相关的资料。">
   
     <link rel="alternative" href="/atom.xml" title="KJTang&#39;s Blog" type="application/atom+xml">
   
@@ -140,35 +144,189 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-    <article id="post-cocos2d-lua-binding" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+            <article id="post-csharp-effective-02" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/07/08/cocos2d-lua-binding/">Cocos2d-lua绑定自定义c++类</a>
+    <h1 class="article-title" itemprop="name">
+      Effective C# 阅读笔记（二）
     </h1>
   
 
         
-        <a href="/2016/07/08/cocos2d-lua-binding/" class="archive-article-date">
-  	<time datetime="2016-07-08T11:41:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-07-08</time>
+        <a href="/2019/04/07/csharp-effective-02/" class="archive-article-date">
+  	<time datetime="2019-04-07T06:00:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-07</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>最近在使用cocos2d-lua写一些小游戏，遇到了需要在lua中调用自定义的c++类的情况，于是花了一下午时间来踩这个坑，目前终于成功跑起来了，故在此做一个记录。</p>
+        <p>本系列为阅读<a href="https://book.douban.com/subject/4741796/" target="_blank" rel="external">《Effective C#》</a>一书所做的笔记，内容基本来自于该书籍与网上相关文档与博客；<br>由于主要起笔记作用，文章只记录了部分书籍中提到的优化要点，一些不常用的、本人暂时无法理解的、已经掌握或自以为已经掌握的内容不再做记录；<br>内容上比较简要，要获取具体的内容需要查阅相关的资料。</p>
+<a id="more"></a>
+<h2 id="GC"><a href="#GC" class="headerlink" title="GC"></a>GC</h2><p><strong> 算法 </strong><br>Mark and Compact </p>
+<p><strong> 循环引用的处理 </strong><br>每次回收过程中会从根节点开始遍历，不可达的对象可以直接视为一个整体清理掉，不需要每个对象记录自己的引用情况（引用计数），也避免了循环引用的问题</p>
+<p><strong> 分代机制 </strong><br>每次回收过程，还有有效引用的对象会进入老一代，每老一代垃圾回收的频率会降低，以保证性能。  </p>
+<p><strong>注意：</strong>如果有定义 finalizer ，对象被标记为垃圾时不会立即清理，而是等待 finalizer 调用后才进行；这样会导致该对象被标记时会进入老一代，以至于需要等待更多的回收周期才能将其真正清理掉；应考虑使用 IDisposable 接口（详见后续 IDisposable 节）</p>
+<h2 id="类成员变量初始化"><a href="#类成员变量初始化" class="headerlink" title="类成员变量初始化"></a>类成员变量初始化</h2><p><strong> 示例 </strong></p>
+<pre class="line-numbers language-csharp"><code class="language-csharp"><span class="token keyword">class</span> <span class="token class-name">MyObj</span> <span class="token punctuation">{</span>
+    <span class="token keyword">private</span> List<span class="token operator">&lt;</span><span class="token keyword">string</span><span class="token operator">></span> lst <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">List</span><span class="token operator">&lt;</span><span class="token keyword">string</span><span class="token operator">></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">MyObj</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token comment" spellcheck="true">// do sth.</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><strong> 初始化时机 </strong><br>类成员变量的初始化会在构造函数之前</p>
+<p><strong> 避免重复初始化 </strong><br><strong>初始化 0 或 null：</strong><br>系统在执行开发者编写的代码之前会自动将整块内存初始化为 0，无需手动初始化  </p>
+<p><strong>装箱拆箱操作：</strong></p>
+<pre class="line-numbers language-csharp"><code class="language-csharp"><span class="token keyword">public</span> <span class="token keyword">struct</span> MyValType <span class="token punctuation">{</span>
+<span class="token punctuation">{</span>
+    <span class="token comment" spellcheck="true">// elided</span>
+<span class="token punctuation">}</span>
+
+MyValType t <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">MyValType</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>手动初始化之前系统就会自动进行一次初始化，手动的初始化会触发 initobj 这条 il 指令来清零内存，导致装箱与拆箱的操作</p>
+<p><strong>不同构造函数的不同逻辑：</strong> </p>
+<pre class="line-numbers language-csharp"><code class="language-csharp"><span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">MyClass</span> <span class="token punctuation">{</span>
+    <span class="token keyword">private</span> List<span class="token operator">&lt;</span><span class="token keyword">string</span><span class="token operator">></span> lst <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">List</span><span class="token operator">&lt;</span><span class="token keyword">string</span><span class="token operator">></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">MyClass</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">MyClass</span><span class="token punctuation">(</span><span class="token keyword">int</span> size<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        lst <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">List</span><span class="token operator">&lt;</span><span class="token keyword">string</span><span class="token operator">></span><span class="token punctuation">(</span>size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>等同于：</p>
+<pre class="line-numbers language-csharp"><code class="language-csharp"><span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">MyClass</span> <span class="token punctuation">{</span>
+    <span class="token keyword">private</span> List<span class="token operator">&lt;</span><span class="token keyword">string</span><span class="token operator">></span> lst<span class="token punctuation">;</span>
+
+    <span class="token function">MyClass</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        lst <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">List</span><span class="token operator">&lt;</span><span class="token keyword">string</span><span class="token operator">></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">MyClass</span><span class="token punctuation">(</span><span class="token keyword">int</span> size<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        lst <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">List</span><span class="token operator">&lt;</span><span class="token keyword">string</span><span class="token operator">></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        lst <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">List</span><span class="token operator">&lt;</span><span class="token keyword">string</span><span class="token operator">></span><span class="token punctuation">(</span>size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>相当于做了重复初始化</p>
+<h2 id="静态构造函数"><a href="#静态构造函数" class="headerlink" title="静态构造函数"></a>静态构造函数</h2><p><strong> 定义及特性 </strong><br>refer to <a href="https://docs.microsoft.com/zh-cn/dotnet/csharp/programming-guide/classes-and-structs/static-constructors" target="_blank" rel="external">静态构造函数（C# 编程指南）</a>  </p>
+<p>静态构造函数用于初始化任何静态数据，或执行仅需执行一次的特定操作;在创建第一个实例或引用任何静态成员之前会自动调用静态构造函数</p>
+<pre class="line-numbers language-csharp"><code class="language-csharp"><span class="token keyword">class</span> <span class="token class-name">SimpleClass</span> <span class="token punctuation">{</span>
+    <span class="token comment" spellcheck="true">// Static variable that must be initialized at run time.</span>
+    <span class="token keyword">static</span> <span class="token keyword">readonly</span> <span class="token keyword">long</span> baseline<span class="token punctuation">;</span>
+
+    <span class="token comment" spellcheck="true">// Static constructor is called at most one time, before any</span>
+    <span class="token comment" spellcheck="true">// instance constructor is invoked or member is accessed.</span>
+    <span class="token keyword">static</span> <span class="token function">SimpleClass</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        baseline <span class="token operator">=</span> DateTime<span class="token punctuation">.</span>Now<span class="token punctuation">.</span>Ticks<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>静态构造函数具有以下属性：</p>
 <ul>
-<li><h4 id="lua调用静态c-函数"><a href="#lua调用静态c-函数" class="headerlink" title="lua调用静态c++函数"></a>lua调用静态c++函数</h4>在lua中调用c++有很多中办法，例如可以直接使用lua_register来注册一个静态函数。如下：  </li>
+<li>静态构造函数不使用访问修饰符，不具有参数。</li>
+<li>在创建第一个实例或引用任何静态成员之前，将自动调用静态构造函数以初始化类。</li>
+<li>不能直接调用静态构造函数。</li>
+<li>用户无法控制在程序中执行静态构造函数的时间。</li>
+<li>静态构造函数的一种典型用法是在类使用日志文件且将构造函数用于将条目写入到此文件中时使用。</li>
+<li>静态构造函数对于创建非托管代码的包装类也非常有用，这种情况下构造函数可调用 LoadLibrary 方法。</li>
+<li>如果静态构造函数引发异常，运行时将不会再次调用该函数，并且类型在程序运行所在的应用程序域的生存期内将保持未初始化。</li>
 </ul>
-        
-          <a class="article-more-a" href="/2016/07/08/cocos2d-lua-binding/#more">more >></a>
-        
+<p><strong>注意：</strong>静态成员变量的初始化语句也会先于静态构造函数</p>
+<p><strong> 实现单例模式 </strong></p>
+<pre class="line-numbers language-csharp"><code class="language-csharp"><span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">MyManager</span> <span class="token punctuation">{</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> MyManager Instance <span class="token punctuation">{</span>
+        <span class="token keyword">get</span> <span class="token punctuation">{</span>
+            <span class="token keyword">return</span> instance<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> MyManager instance<span class="token punctuation">;</span>
+
+    <span class="token comment" spellcheck="true">// 在调用任何接口或成员前都会调用</span>
+    <span class="token keyword">static</span> <span class="token function">MyManager</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        instance <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">MyManager</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment" spellcheck="true">// 初始化逻辑</span>
+    <span class="token function">MyManager</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token comment" spellcheck="true">// do sth.</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="链式构造函数"><a href="#链式构造函数" class="headerlink" title="链式构造函数"></a>链式构造函数</h2><p><strong> 示例 </strong></p>
+<pre class="line-numbers language-csharp"><code class="language-csharp"><span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">MyClass</span> 
+<span class="token punctuation">{</span>
+    <span class="token keyword">private</span> <span class="token keyword">string</span> name<span class="token punctuation">;</span>
+    <span class="token keyword">private</span> <span class="token keyword">int</span> age<span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token function">MyClass</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">:</span> <span class="token keyword">this</span><span class="token punctuation">(</span><span class="token string">""</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token function">MyClass</span><span class="token punctuation">(</span><span class="token keyword">string</span> name<span class="token punctuation">,</span> <span class="token keyword">int</span> age<span class="token punctuation">)</span> 
+    <span class="token punctuation">{</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>name <span class="token operator">=</span> name<span class="token punctuation">;</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>age <span class="token operator">=</span> age<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><strong> 优势 </strong></p>
+<ul>
+<li>省略重复代码</li>
+<li>编译器可生成更高效的代码</li>
+</ul>
+<h2 id="IDisposable-接口"><a href="#IDisposable-接口" class="headerlink" title="IDisposable 接口"></a>IDisposable 接口</h2><p><strong> 资源类型 </strong><br>C# 中资源分为两种类型：</p>
+<ul>
+<li>托管资源（Managed）：C# 中分配在堆上的资源，例如对象、数组等等，垃圾回收机制会在何时的时间进行回收</li>
+<li>非托管资源（Unmanaged）：常见的比如包装操作系统资源的对象，例如文件、网络连接、数据库连接等</li>
+</ul>
+<p><strong> 释放非托管资源 </strong><br>一般情况下，为了保证非托管资源正确得到释放，具有非托管资源的对象必须实现 finalizer ，这样垃圾回收时会自动调用 finalizer 释放非托管资源；  </p>
+<p>然而具有 finalizer 的对象在回收时会有更多的开销，且会因为第一次无法清理（需等待 finalizer 执行后才进行清理）而进入老一代，导致回收时机变晚，故可以通过实现 IDisposable 接口（其实也可自己创建并实现其它接口，作用相同即可），并在合适的时机手动调用，以减少开销；</p>
+<p>但即使实现了 IDisposable 接口，具有非托管资源的对象也还是必须实现 finalizer 来释放资源，避免 IDisposable 接口未能正常调用</p>
+<p><strong> 标准实现方式 </strong></p>
+<pre class="line-numbers language-csharp"><code class="language-csharp"><span class="token keyword">public</span> <span class="token keyword">abstract</span> <span class="token keyword">class</span> <span class="token class-name">ObjectBase</span> <span class="token punctuation">:</span> IDisposable <span class="token punctuation">{</span>
+    <span class="token keyword">private</span> <span class="token keyword">bool</span> disposed <span class="token operator">=</span> <span class="token keyword">false</span><span class="token punctuation">;</span>
+
+    <span class="token comment" spellcheck="true">// finalizer </span>
+    <span class="token operator">~</span><span class="token function">ObjectBase</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">Dispose</span><span class="token punctuation">(</span><span class="token keyword">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment" spellcheck="true">// IDisposable </span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">Dispose</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">Dispose</span><span class="token punctuation">(</span><span class="token keyword">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment" spellcheck="true">// 如果手动调用 IDisposable 接口清理过资源，</span>
+        <span class="token comment" spellcheck="true">// 则可让 GC 在回收时不必调用 finalizer</span>
+        GC<span class="token punctuation">.</span><span class="token function">SuppressFinalize</span><span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment" spellcheck="true">// disposing：标记 Dispose 函数是由 IDisposable 接口调用还是 finalizer 调用</span>
+    <span class="token comment" spellcheck="true">// 若是 IDisposable：同时清理托管和非托管资源</span>
+    <span class="token comment" spellcheck="true">// 若是 finalizer：只需清理非托管资源，托管资源在垃圾回收时已被清理</span>
+    <span class="token keyword">private</span> <span class="token keyword">void</span> <span class="token function">Dispose</span><span class="token punctuation">(</span><span class="token keyword">bool</span> disposing<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>disposed<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>disposing<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                <span class="token function">DisposeManaged</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token function">DisposeUnmanaged</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        disposed <span class="token operator">=</span> <span class="token keyword">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment" spellcheck="true">// 释放托管资源（子类必须提供自己的实现来清理非托管资源）</span>
+    <span class="token keyword">protected</span> <span class="token keyword">abstract</span> <span class="token keyword">void</span> <span class="token function">DisposeManaged</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment" spellcheck="true">// 释放非托管资源</span>
+    <span class="token keyword">protected</span> <span class="token keyword">virtual</span> <span class="token keyword">void</span> <span class="token function">DisposeUnmanaged</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
       
 
       
@@ -181,7 +339,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">cocos2d</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">c#</a>
         		</li>
       		
 		</ul>
@@ -190,18 +348,74 @@
       
 
       
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2016/07/08/cocos2d-lua-binding/">展开全文 >></a>
-        </p>
-      
 
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2019/04/07/csharp-effective-02/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
       
       <div class="clearfix"></div>
     </div>
   </div>
 </article>
 
-
+  
+<nav id="article-nav">
+  
+  
+    <a href="/2019/04/06/csharp-effective-01/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">Effective C# 阅读笔记（一）</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
 
 
 
@@ -209,152 +423,28 @@
 
 
   
-    <article id="post-cocos2d-render" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/04/13/cocos2d-render/">Cocos2dx:绘制流程</a>
-    </h1>
-  
-
-        
-        <a href="/2016/04/13/cocos2d-render/" class="archive-article-date">
-  	<time datetime="2016-04-13T13:52:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-04-13</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="cocos2d绘制流程"><a href="#cocos2d绘制流程" class="headerlink" title="cocos2d绘制流程"></a>cocos2d绘制流程</h3><p>cocos2d进行绘制主要分成了三个步骤：   </p>
-<ol>
-<li>每一个ui元素提交绘制命令(RenderCommand)到绘制队列(RenderQueue)  </li>
-<li>绘制队列对将要绘制的元素进行排序，确定绘制顺序  </li>
-<li>Renderer执行绘制命令进行绘制  </li>
-</ol>
-        
-          <a class="article-more-a" href="/2016/04/13/cocos2d-render/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">cocos2d</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2016/04/13/cocos2d-render/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-
-
-
-
-
-
+  <div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="csharp-effective-02" data-title="Effective C# 阅读笔记（二）" data-url="http://yoursite.com/2019/04/07/csharp-effective-02/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"kjtang"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
 
   
-    <article id="post-cocos2d-tilemap02" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/27/cocos2d-tilemap02/">Cocos2dx:TileMap的使用（二）</a>
-    </h1>
-  
-
-        
-        <a href="/2016/03/27/cocos2d-tilemap02/" class="archive-article-date">
-  	<time datetime="2016-03-27T07:02:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-03-27</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>上一篇主要介绍了在cocos2d中tilemap的加载使用方法，这一篇就简要查看一下cocos2d这部分的源码，看看cocos2d是如何解析tilemap中的数据的。</p>
-<p>创建tilemap的代码如下：</p>
-<pre><code class="cpp">    TMXTiledMap* tilemap = TMXTiledMap::create(&quot;Map/tilemap.tmx&quot;);
-    this-&gt;addChild(tilemap);
-</code></pre>
-        
-          <a class="article-more-a" href="/2016/03/27/cocos2d-tilemap02/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">cocos2d</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">tilemap</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2016/03/27/cocos2d-tilemap02/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
 
 
-
-
-
-
-
-
-  
-  
-    <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
-    </nav>
-  
 
 
           </div>
@@ -376,8 +466,8 @@
     <script>
 	var yiliaConfig = {
 		mathjax: false,
-		isHome: true,
-		isPost: false,
+		isHome: false,
+		isPost: true,
 		isArchive: false,
 		isTag: false,
 		isCategory: false,
