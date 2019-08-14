@@ -11,10 +11,10 @@
   <meta name="description" content="本系列为阅读《Effective C#》一书所做的笔记，内容基本来自于该书籍与网上相关文档与博客；由于主要起笔记作用，文章只记录了部分书籍中提到的优化要点，一些不常用的、本人暂时无法理解的、已经掌握或自以为已经掌握的内容不再做记录；内容上比较简要，要获取具体的内容需要查阅相关的资料。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Effective C# 阅读笔记（二）">
-<meta property="og:url" content="http://yoursite.com/2019/04/07/csharp-effective-02/index.html">
+<meta property="og:url" content="http://yoursite.com/2019/07/28/csharp-effective-02/index.html">
 <meta property="og:site_name" content="KJTang's Blog">
 <meta property="og:description" content="本系列为阅读《Effective C#》一书所做的笔记，内容基本来自于该书籍与网上相关文档与博客；由于主要起笔记作用，文章只记录了部分书籍中提到的优化要点，一些不常用的、本人暂时无法理解的、已经掌握或自以为已经掌握的内容不再做记录；内容上比较简要，要获取具体的内容需要查阅相关的资料。">
-<meta property="og:updated_time" content="2019-07-28T13:26:16.361Z">
+<meta property="og:updated_time" content="2019-07-28T13:29:02.004Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Effective C# 阅读笔记（二）">
 <meta name="twitter:description" content="本系列为阅读《Effective C#》一书所做的笔记，内容基本来自于该书籍与网上相关文档与博客；由于主要起笔记作用，文章只记录了部分书籍中提到的优化要点，一些不常用的、本人暂时无法理解的、已经掌握或自以为已经掌握的内容不再做记录；内容上比较简要，要获取具体的内容需要查阅相关的资料。">
@@ -156,8 +156,8 @@
   
 
         
-        <a href="/2019/04/07/csharp-effective-02/" class="archive-article-date">
-  	<time datetime="2019-04-07T06:00:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-07</time>
+        <a href="/2019/07/28/csharp-effective-02/" class="archive-article-date">
+  	<time datetime="2019-07-28T13:30:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-28</time>
 </a>
         
       </header>
@@ -395,7 +395,7 @@ MyValType t <span class="token operator">=</span> <span class="token keyword">ne
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2019/04/07/csharp-effective-02/" alt="微信分享二维码">
+      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2019/07/28/csharp-effective-02/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -408,6 +408,15 @@ MyValType t <span class="token operator">=</span> <span class="token keyword">ne
 
   
 <nav id="article-nav">
+  
+    <a href="/2019/08/15/csharp-effective-03/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          Effective C# 阅读笔记（三）
+        
+      </div>
+    </a>
   
   
     <a href="/2019/04/06/csharp-effective-01/" id="article-nav-older" class="article-nav-link-wrap">
@@ -425,7 +434,7 @@ MyValType t <span class="token operator">=</span> <span class="token keyword">ne
   
   <div class="duoshuo">
 	<!-- 多说评论框 start -->
-	<div class="ds-thread" data-thread-key="csharp-effective-02" data-title="Effective C# 阅读笔记（二）" data-url="http://yoursite.com/2019/04/07/csharp-effective-02/"></div>
+	<div class="ds-thread" data-thread-key="csharp-effective-02" data-title="Effective C# 阅读笔记（二）" data-url="http://yoursite.com/2019/07/28/csharp-effective-02/"></div>
 	<!-- 多说评论框 end -->
 	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
 	<script type="text/javascript">
@@ -533,6 +542,10 @@ MyValType t <span class="token operator">=</span> <span class="token keyword">ne
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">tilemap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">chipmunk</a>
               </li>
              
@@ -541,19 +554,15 @@ MyValType t <span class="token operator">=</span> <span class="token keyword">ne
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">minigame</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">sublime</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">tilemap</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">minigame</a>
               </li>
              
               <li class="article-tag-list-item">
