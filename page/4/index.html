@@ -142,6 +142,142 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-cocos2d-lua-binding" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/07/08/cocos2d-lua-binding/">Cocos2d-lua绑定自定义c++类</a>
+    </h1>
+  
+
+        
+        <a href="/2016/07/08/cocos2d-lua-binding/" class="archive-article-date">
+  	<time datetime="2016-07-08T11:41:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-07-08</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近在使用cocos2d-lua写一些小游戏，遇到了需要在lua中调用自定义的c++类的情况，于是花了一下午时间来踩这个坑，目前终于成功跑起来了，故在此做一个记录。</p>
+<ul>
+<li><h4 id="lua调用静态c-函数"><a href="#lua调用静态c-函数" class="headerlink" title="lua调用静态c++函数"></a>lua调用静态c++函数</h4>在lua中调用c++有很多中办法，例如可以直接使用lua_register来注册一个静态函数。如下：  </li>
+</ul>
+        
+          <a class="article-more-a" href="/2016/07/08/cocos2d-lua-binding/#more">more >></a>
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">cocos2d</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2016/07/08/cocos2d-lua-binding/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+
+
+
+
+
+
+
+  
+    <article id="post-cocos2d-render" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/04/13/cocos2d-render/">Cocos2dx:绘制流程</a>
+    </h1>
+  
+
+        
+        <a href="/2016/04/13/cocos2d-render/" class="archive-article-date">
+  	<time datetime="2016-04-13T13:52:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-04-13</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="cocos2d绘制流程"><a href="#cocos2d绘制流程" class="headerlink" title="cocos2d绘制流程"></a>cocos2d绘制流程</h3><p>cocos2d进行绘制主要分成了三个步骤：   </p>
+<ol>
+<li>每一个ui元素提交绘制命令(RenderCommand)到绘制队列(RenderQueue)  </li>
+<li>绘制队列对将要绘制的元素进行排序，确定绘制顺序  </li>
+<li>Renderer执行绘制命令进行绘制  </li>
+</ol>
+        
+          <a class="article-more-a" href="/2016/04/13/cocos2d-render/#more">more >></a>
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">cocos2d</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2016/04/13/cocos2d-render/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+
+
+
+
+
+
+
+  
     <article id="post-cocos2d-tilemap02" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -214,145 +350,9 @@
 
 
   
-    <article id="post-cocos2d-tilemap01" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/26/cocos2d-tilemap01/">Cocos2dx:TileMap的使用（一）</a>
-    </h1>
-  
-
-        
-        <a href="/2016/03/26/cocos2d-tilemap01/" class="archive-article-date">
-  	<time datetime="2016-03-26T12:47:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-03-26</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>针对如何在cocos2d中使用tilemap来加载地图的步骤网上基本都有教程，比如怎么使用Tiled创建tilemap，以及如何在cocos2d中加载，网上都能搜索到，这里只简单说一下，不列出具体步骤。<br>这篇文章主要是对tilemap文件的格式以及cocos2d如何加载tilemap做了一个简单的分析，以备日后查看。</p>
-        
-          <a class="article-more-a" href="/2016/03/26/cocos2d-tilemap01/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">cocos2d</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">tilemap</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2016/03/26/cocos2d-tilemap01/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-
-
-
-
-
-
-
-  
-    <article id="post-cocos2d-physics" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/04/cocos2d-physics/">Cocos2dx:物理引擎碰撞检测</a>
-    </h1>
-  
-
-        
-        <a href="/2016/03/04/cocos2d-physics/" class="archive-article-date">
-  	<time datetime="2016-03-04T10:11:08.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-03-04</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>在cocos2dx中使用物理引擎的时候，对物理世界(PhysicsWorld)中的物体设置好碰撞检测的规则是很常见的需求，对Node调用其getPhysicsBody可以获得它的PhysicsBody，通过setGroup，setCategoryBitmask，setCollisionBitmask，setContactTestBitmask等API可以设置碰撞检测的规则，<br>下面进行一些总结：</p>
-        
-          <a class="article-more-a" href="/2016/03/04/cocos2d-physics/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">cocos2d</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">chipmunk</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2016/03/04/cocos2d-physics/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-
-
-
-
-
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/3/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span>
+      <a class="extend prev" rel="prev" href="/page/3/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/5/">Next &raquo;</a>
     </nav>
   
 
@@ -364,7 +364,7 @@
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2019 KJTang
+    		&copy; 2020 KJTang
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
@@ -443,11 +443,15 @@
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">chipmunk</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">tilemap</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">chipmunk</a>
+                <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -459,11 +463,7 @@
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">gamedesign</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">sublime</a>
+                <a href="javascript:void(0)" class="js-tag color2">vscode</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -472,6 +472,10 @@
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">ui</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">sublime</a>
               </li>
             
             <div class="clearfix"></div>
